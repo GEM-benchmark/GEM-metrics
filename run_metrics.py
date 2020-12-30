@@ -48,4 +48,4 @@ if __name__ == '__main__':
     ap.add_argument('predictions_file', type=str, help='Path to system outputs JSON file')
 
     args = ap.parse_args()
-    run_metrics(**vars(args))
+    run_metrics(args)

@@ -1,17 +1,9 @@
 #!/usr/bin/env python3
 
 import nltk
-import os
 import json
+from .nltk_data import nltk_ensure_download
 
-import pudb; pu.db
-_NLTK_DATA_PATH = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'nltk_data')
-os.makedirs(_NLTK_DATA_PATH, exist_ok=True)
-nltk.data.path.insert(0, _NLTK_DATA_PATH)
-try:
-    nltk.data.find('tokenizers/punkt')
-except LookupError:
-    nltk.download('punkt', download_dir=_NLTK_DATA_PATH)
 
 
 class Texts:
@@ -35,7 +27,7 @@ class Texts:
         self._ws_tokenized = [([' '.join(i) for i in item]
                                if self.multi_ref
                                else ' '.join(item))
-                              for item in self.data]
+                              for item in self._tokenized]
 
     @property
     def detokenized(self):
@@ -59,10 +51,12 @@ class Texts:
 class Predictions(Texts):
 
     def __init__(self, data_file):
-        super().__init__(key='generated', tokenize_func=nltk.tokenize.word_tokenize)
+        nltk_ensure_download('tokenizers/punkt')
+        super().__init__(key='generated', data_file=data_file, tokenize_func=nltk.tokenize.word_tokenize)
 
 
 class References(Texts):
 
     def __init__(self, data_file):
-        super().__init__(key='target', tokenize_func=nltk.tokenize.word_tokenize)
+        nltk_ensure_download('tokenizers/punkt')
+        super().__init__(key='target', data_file=data_file, tokenize_func=nltk.tokenize.word_tokenize)
