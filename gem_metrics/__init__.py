@@ -4,6 +4,7 @@
 from .texts import Predictions, References
 
 from .meteor import Meteor
+from .bleu import BLEU
 
-REFERENCED_METRICS = [Meteor]
+REFERENCED_METRICS = [BLEU, Meteor]
 REFERENCELESS_METRICS = []

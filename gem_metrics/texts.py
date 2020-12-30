@@ -30,8 +30,8 @@ class Texts:
                               for item in self._tokenized]
 
     @property
-    def detokenized(self):
-        """Return list of (lists of) detokenized strings."""
+    def untokenized(self):
+        """Return list of (lists of) untokenized strings."""
         return self.data
 
     @property
