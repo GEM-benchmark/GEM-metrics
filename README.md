@@ -12,6 +12,8 @@ cd GEM-metrics
 pip install -r requirements.txt
 ```
 
+Note that some NLTK stuff may be downloaded into a subdirectory of your checkout, so make sure you have write access when you run this.
+
 Usage
 -----
 
