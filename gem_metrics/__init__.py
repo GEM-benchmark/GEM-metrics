@@ -8,8 +8,9 @@ from .texts import Predictions, References
 from .meteor import Meteor
 from .bleu import BLEU
 from .rouge import ROUGE
+from .msttr import MSTTR
 
 # Lists of metrics to use
 # TODO make this populate automatically based on imports
 REFERENCED_METRICS = [BLEU, Meteor, ROUGE]
-REFERENCELESS_METRICS = []
+REFERENCELESS_METRICS = [MSTTR]

@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 
 """
+!!! This is a (slightly modified) copy of
+https://github.com/tuetschek/e2e-metrics/blob/master/metrics/pymteval.py
+
+---
 BLEU & NIST measurements -- should be compatible with mteval-v13a.pl (basic tokenization).
 Also provides BLEU +1 smoothing (if set to work like that).
 
