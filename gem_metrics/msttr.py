@@ -6,7 +6,9 @@ from .impl.diversity import PUNCTUATION
 
 
 class MSTTR(ReferencelessMetric):
-    """Mean segmental type-token ratio (based on tokenized data)"""
+    """Mean segmental type-token ratio (based on tokenized data). Segment length is
+    pre-set to 100, computation is done on lowercased data. Returns two variants -- with
+    and without taking punctuation into account."""
 
     def compute(self, predictions):
 
