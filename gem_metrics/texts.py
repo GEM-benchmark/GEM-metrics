@@ -5,7 +5,6 @@ import json
 from .nltk_data import nltk_ensure_download
 
 
-
 class Texts:
     """Holder class for output texts or references."""
 
@@ -49,6 +48,7 @@ class Texts:
 
 
 class Predictions(Texts):
+    """Data holder class for system outputs/predictions."""
 
     def __init__(self, data_file):
         nltk_ensure_download('tokenizers/punkt')
@@ -56,6 +56,7 @@ class Predictions(Texts):
 
 
 class References(Texts):
+    """Data holder class for references/targets."""
 
     def __init__(self, data_file):
         nltk_ensure_download('tokenizers/punkt')

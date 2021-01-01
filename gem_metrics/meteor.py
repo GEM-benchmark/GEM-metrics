@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
 
 from nltk.translate import meteor_score
-from .metric import Metric
+from .metric import ReferencedMetric
 from .nltk_data import nltk_ensure_download
 import numpy as np
 
 
-class Meteor(Metric):
+class Meteor(ReferencedMetric):
+    """METEOR uses NLTK implementation. This probably doesn't have the same results as the official
+    METEOR implementation, but at least it doesn't need Java to work."""
 
     def __init__(self):
         nltk_ensure_download('corpora/wordnet')

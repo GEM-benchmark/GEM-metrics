@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 
-from .metric import Metric
+from .metric import ReferencedMetric
 import numpy as np
 from rouge_score import rouge_scorer, scoring
 
 
-class ROUGE(Metric):
+class ROUGE(ReferencedMetric):
     """ROUGE uses Google implementation (https://github.com/google-research/google-research/tree/master/rouge)
     but adds own implementation of multi-ref jackknifing, which doesn't seem to be supported by the
-    Google code."""
+    Google code.
+    The Google implementation should be identical to Rouge-155 (except tokenization?), the jackknifing is
+    implemented after the ROUGE paper.
+    """
 
     def compute(self, predictions, references):
         rouge_types = ["rouge1", "rouge2", "rougeL", "rougeLsum"]
