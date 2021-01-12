@@ -1,49 +1,29 @@
 #!/usr/bin/env python3
 
 from argparse import ArgumentParser
-from typing import Optional
 import json
 import sys
 
 import gem_metrics
 
 
-def compute_metrics(outs: gem_metrics.Predictions, refs: Optional[gem_metrics.References]) -> dict:
-    """Main metrics computation routine. Expects a Predictions and a References object, holding
-    system outputs and corresponding references (References may be None -- only referenceless metrics
-    are computed in such a case).
-    Returns a dict with the results.
-    """
-    # initialize values storage
-    values = {'predictions_file': outs.filename,
-              'N': len(outs)}
-
-    # compute referenceless metrics
-    for metric_class in gem_metrics.REFERENCELESS_METRICS:
-        metric = metric_class()
-        values.update(metric.compute(outs))
-
-    # compute ref-based metrics
-    if args.references_file is not None:
-        values['references_file'] = refs.filename
-        for metric_class in gem_metrics.REFERENCED_METRICS:
-            metric = metric_class()
-            values.update(metric.compute(outs, refs))
-    return values
-
-
 def main(args):
     """Main entry point -- load inputs, call metrics measuring, print outputs"""
 
     # load system predictions
-    outs = gem_metrics.Predictions(args.predictions_file)
+    with open(args.predictions_file, encoding='UTF-8') as fh:
+        data = json.load(fh)
+    if isinstance(data, dict) and 'submission_name' in data:
+        outs = gem_metrics.Submission(data)
+    else:
+        outs = gem_metrics.Predictions(data)
 
     # load references, if available
     if args.references_file is not None:
         refs = gem_metrics.References(args.references_file)
         assert(len(refs) == len(outs))
 
-    values = compute_metrics(outs, refs)
+    values = gem_metrics.compute(outs, refs)
 
     # print output
     out_fh = sys.stdout

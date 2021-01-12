@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
 
-import nltk
+from typing import Optional
 import json
 import string
+import nltk
 from .nltk_data import nltk_ensure_download
 
 
 class Texts:
     """Holder class for output texts or references."""
 
-    def __init__(self, key, data_file, tokenize_func):
-        self.filename = data_file
+    def __init__(self, key, data, tokenize_func):
         self.key = key
-        # TODO allow other data formats?
-        with open(data_file, 'r', encoding='UTF-8') as fh:
-            self.all_data = json.load(fh)
-            self.data = [item[key] for item in self.all_data]
+        if not isinstance(data, dict):
+            self.filename = data
+            # TODO allow other data formats?
+            with open(data, 'r', encoding='UTF-8') as fh:
+                data = json.load(fh)
+        else:
+            self.filename = data.get('filename')
+        self.all_data = data['values']
+        self.language = data['language']
+
+        self.data = [item[key] for item in self.all_data]
 
         # detect if we're using multiple texts per instance
         self.multi_ref = isinstance(self.data[0], list)
@@ -53,9 +60,9 @@ class Predictions(Texts):
 
     PUNCTUATION = set(string.punctuation)
 
-    def __init__(self, data_file):
+    def __init__(self, data):
         nltk_ensure_download('tokenizers/punkt')
-        super().__init__(key='generated', data_file=data_file, tokenize_func=nltk.tokenize.word_tokenize)
+        super().__init__(key='generated', data=data, tokenize_func=nltk.tokenize.word_tokenize)
         self._lc_tokenized = [[w.lower() for w in item] for item in self.list_tokenized]
         self._nopunct_lc_tokenized = [[w for w in item if w not in self.PUNCTUATION] for item in self._lc_tokenized]
 
@@ -73,6 +80,30 @@ class Predictions(Texts):
 class References(Texts):
     """Data holder class for references/targets."""
 
-    def __init__(self, data_file):
+    def __init__(self, data):
         nltk_ensure_download('tokenizers/punkt')
-        super().__init__(key='target', data_file=data_file, tokenize_func=nltk.tokenize.word_tokenize)
+        super().__init__(key='target', data=data, tokenize_func=nltk.tokenize.word_tokenize)
+
+
+class Submission:
+    """Data class for multiple submissions."""
+
+    def __init__(self, data):
+        if isinstance(data, dict):
+            self.all_data = data
+        else:
+            self.filename = data
+            with open(data, 'r', encoding='UTF-8') as fh:
+                self.all_data = json.load(fh)
+        self.name = data['submission_name']
+        self.param_count = data.get('param_count')
+        self.entries = {}
+        for key in self.all_data.keys():
+            if not key.endswith('_val'):
+                continue
+            dataset_name = key[:-4]
+            self.entries[dataset_name] = Predictions(self.all_data[key])
+
+    def predictions_for(self, dataset_name: str) -> Optional[Predictions]:
+        """Return per-dataset predictions"""
+        return self.entries.get(dataset_name)
