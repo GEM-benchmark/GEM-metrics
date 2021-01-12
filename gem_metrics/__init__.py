@@ -40,3 +40,8 @@ def compute(outs: Predictions, refs: Optional[References]) -> dict:
             metric = metric_class()
             values.update(metric.compute(outs, refs))
     return values
+
+
+def load_references(dataset_name: str) -> Optional[References]:
+    """Load a file with references for a standard GEM dataset."""
+    return None

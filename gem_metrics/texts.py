@@ -107,3 +107,8 @@ class Submission:
     def predictions_for(self, dataset_name: str) -> Optional[Predictions]:
         """Return per-dataset predictions"""
         return self.entries.get(dataset_name)
+
+    @property
+    def datasets(self):
+        """List of datasets for which there are predictions available."""
+        return list(self.entries.keys())

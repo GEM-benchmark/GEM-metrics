@@ -13,17 +13,37 @@ def main(args):
     # load system predictions
     with open(args.predictions_file, encoding='UTF-8') as fh:
         data = json.load(fh)
+
+    # multi-file submissions
     if isinstance(data, dict) and 'submission_name' in data:
-        outs = gem_metrics.Submission(data)
+        data = gem_metrics.Submission(data)
+
+        ref_data = None
+        if args.references_file:
+            with open(args.references_file, encoding='UTF-8') as fh:
+                raw_ref_data = json.load(fh)
+                assert(sorted(list(raw_ref_data.keys())) == sorted(data.datasets))
+                for dataset in data.datasets:
+                    ref_data[dataset] = gem_metrics.References(ref_data[dataset])
+        values = {}
+        for dataset in data.datasets:
+            outs = data.predictions_for(dataset)
+            # use default reference files if no custom ones are provided
+            refs = ref_data[dataset] if ref_data else gem_metrics.load_references(dataset)
+            if refs:
+                assert(len(refs) == len(outs))
+            values[dataset] = gem_metrics.compute(outs, refs)
+
+    # single-file mode
     else:
         outs = gem_metrics.Predictions(data)
 
-    # load references, if available
-    if args.references_file is not None:
-        refs = gem_metrics.References(args.references_file)
-        assert(len(refs) == len(outs))
+        # load references, if available
+        if args.references_file is not None:
+            refs = gem_metrics.References(args.references_file)
+            assert(len(refs) == len(outs))
 
-    values = gem_metrics.compute(outs, refs)
+        values = gem_metrics.compute(outs, refs)
 
     # print output
     out_fh = sys.stdout
