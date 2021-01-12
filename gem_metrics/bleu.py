@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 
 from .metric import ReferencedMetric
-from .impl import pymteval
-
+import sacrebleu
+from itertools import zip_longest
 
 class BLEU(ReferencedMetric):
-    """BLEU uses a Python implementation from E2E-metrics (https://github.com/tuetschek/e2e-metrics),
-    which should be compatible with SacreBLEU or the original mteval-v13a script used by WMT (up to
-    4th digit -- there is some slight smoothing to get around edge cases, such as no matching n-grams)."""
+    """BLEU uncased BLEU from SacreBLEU."""
 
     def compute(self, predictions, references):
-        bleu = pymteval.BLEUScore()
-        for refs, pred in zip(references.untokenized, predictions.untokenized):
-            bleu.append(pred, refs)
-        return {'bleu': bleu.score()}
+        ref_streams = list(zip_longest(*references.untokenized))
+        bleu = sacrebleu.corpus_bleu(predictions.untokenized, ref_streams, lowercase=True)
+        return {'bleu': bleu.score}
