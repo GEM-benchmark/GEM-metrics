@@ -1,4 +1,5 @@
 nltk
 numpy
 rouge-score
+logzero
 git+https://github.com/tuetschek/sacrebleu
