@@ -1,0 +1,99 @@
+{
+  "submission_name": "facebook/bart-base",
+  "param_count": 139420416,
+  "common_gen_val": {
+      "language": "en",
+      "values": [
+        {
+          "concept_set_idx": 0,
+          "concepts": [
+            "field",
+            "look",
+            "stand"
+          ],
+          "generated": "Two men standing in a field looking at the camera."
+        },
+        {
+          "concept_set_idx": 1,
+          "concepts": [
+            "kid",
+            "room",
+            "dance"
+          ],
+          "generated": "The kids are dancing in the living room."
+        },
+        {
+          "concept_set_idx": 2,
+          "concepts": [
+            "cat",
+            "pet",
+            "couch"
+          ],
+          "generated": "A cat is petting a couch."
+        },
+        {
+          "concept_set_idx": 3,
+          "concepts": [
+            "climb",
+            "building",
+            "side"
+          ],
+          "generated": "A man is climbing on the side of a building."
+        },
+        {
+          "concept_set_idx": 4,
+          "concepts": [
+            "climb",
+            "wall",
+            "talk"
+          ],
+          "generated": "A group of people are climbing on a wall and talking to each other."
+        },
+        {
+          "concept_set_idx": 5,
+          "concepts": [
+            "drive",
+            "snow",
+            "car"
+          ],
+          "generated": "A car driving in the snow."
+        },
+        {
+          "concept_set_idx": 6,
+          "concepts": [
+            "talk",
+            "wear",
+            "phone"
+          ],
+          "generated": "A man is talking to a woman wearing a phone."
+        },
+        {
+          "concept_set_idx": 7,
+          "concepts": [
+            "hockey",
+            "rink",
+            "team"
+          ],
+          "generated": "A hockey team is skating in a rink."
+        },
+        {
+          "concept_set_idx": 8,
+          "concepts": [
+            "ocean",
+            "surfer",
+            "surf"
+          ],
+          "generated": "surfer surfing in the ocean"
+        },
+        {
+          "concept_set_idx": 9,
+          "concepts": [
+            "stair",
+            "jump",
+            "flight"
+          ],
+          "generated": "A man jumps off a stair during a flight."
+        }
+      ]
+  }
+}
