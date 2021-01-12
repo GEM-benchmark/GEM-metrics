@@ -46,7 +46,7 @@ class MSTTR(ReferencelessMetric):
                 chunk.extend(sentence[:needed])
                 ttrs.append(self._TTR(chunk))
                 chunk = sentence[needed:]
-        results = {'msttr_value': sum(ttrs) / len(ttrs),
+        results = {'msttr_value': sum(ttrs) / len(ttrs) if ttrs else float('nan'),
                    'num_ttrs': len(ttrs),
                    'ttrs': ttrs}
         return results
