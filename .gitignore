@@ -1,4 +1,6 @@
 .*.swp
 __pycache__
 gem_metrics/nltk_data
+gem_metrics/impl/data
+gem_metrics/impl/meteor-1.5.jar
 venv_gem
