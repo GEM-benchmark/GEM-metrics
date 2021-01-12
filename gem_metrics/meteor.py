@@ -1,21 +1,16 @@
 #!/usr/bin/env python3
 
-from nltk.translate import meteor_score
 from .metric import ReferencedMetric
-from .nltk_data import nltk_ensure_download
-import numpy as np
+from .impl.meteor import PyMeteorWrapper
 
 
 class Meteor(ReferencedMetric):
-    """METEOR uses NLTK implementation. This probably doesn't have the same results as the official
-    METEOR implementation, but at least it doesn't need Java to work."""
-
-    def __init__(self):
-        nltk_ensure_download('corpora/wordnet')
+    """METEOR uses the original Java Meteor-1.5 implementation with a wrapper adapted from
+    MSCOCO/E2E-metrics."""
 
     def compute(self, predictions, references):
+        m = PyMeteorWrapper('en')
+        # ignore individual sentence scores
+        meteor, _ = m.compute_score(predictions.untokenized, references.untokenized)
+        return {'meteor': meteor}
 
-        scores = []
-        for refs, pred in zip(references.whitespace_tokenized, predictions.whitespace_tokenized):
-            scores.append(meteor_score.meteor_score(refs, pred))
-        return {'meteor': np.mean(scores)}
