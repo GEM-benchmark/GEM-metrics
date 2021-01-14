@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+from logzero import logger
+from typing import Optional
 
 # Data holder classes
 from .texts import Predictions, References, Submission
-from typing import Optional
 
 # Metric implementations
 from .meteor import Meteor
@@ -11,6 +12,7 @@ from .bleu import BLEU
 from .rouge import ROUGE
 from .msttr import MSTTR
 from .ngrams import NGramStats
+from .data import ensure_download
 
 # Lists of metrics to use
 # TODO make this populate automatically based on imports
@@ -60,7 +62,20 @@ def process_submission(outs: Submission, refs: Optional[dict]) -> dict:
     return values
 
 
+# URLs to download standard references from
+_DATASET_REFERENCES_URLS = {
+    'e2e_nlg_cleaned_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/e2e_nlg_cleaned_test.json',
+    'e2e_nlg_cleaned_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/e2e_nlg_cleaned_val.json',
+}
+
+
 def load_references(dataset_name: str) -> Optional[References]:
-    """Load a file with references for a standard GEM dataset."""
-    # TODO not implemented yet
+    """Load a file with references for a standard GEM dataset (attempt download), return None if not present."""
+    if dataset_name in _DATASET_REFERENCES_URLS:
+        try:
+            dataset_file = ensure_download('references', dataset_name + '.json', _DATASET_REFERENCES_URLS[dataset_name])
+            return References(dataset_file)
+        except Exception as e:
+            logger.warn(f'Could not download references for {dataset_name}: {str(e)}')
+            return None
     return None

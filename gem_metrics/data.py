@@ -49,10 +49,12 @@ def ensure_download(subdir, target_file, url):
         # tar.gz download
         if url.endswith('.tgz') or url.endswith('.tar.gz'):
             tmp_fname, _ = urllib.request.urlretrieve(url, reporthook=partial(_urlretrieve_reporthook, start_time=time.time()))
+            sys.stderr.write("\n")
             logger.warn(f'Extracting from {tmp_fname} to {target_dir}')
             tmp_tgz = tarfile.open(tmp_fname, 'r:gz')
             tmp_tgz.extractall(target_dir)
         # single file download
         else:
-            urllib.request.urlretrieve(url, reporthook=partial(_urlretrieve_reporthook, start_time=time.time()))
+            urllib.request.urlretrieve(url, target_file, reporthook=partial(_urlretrieve_reporthook, start_time=time.time()))
+            sys.stderr.write("\n")
     return target_file
