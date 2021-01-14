@@ -4,7 +4,7 @@ from typing import Optional
 import json
 import string
 import nltk
-from .nltk_data import nltk_ensure_download
+from .data import nltk_ensure_download
 
 
 class Texts:

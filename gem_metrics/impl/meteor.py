@@ -4,12 +4,10 @@
 # Python wrapper for METEOR implementation, by Xinlei Chen
 # Acknowledge Michael Denkowski for the generous discussion and help
 
-import os
 import subprocess
 import threading
-import urllib
-import tarfile
-from logzero import logger
+import os
+from ..data import ensure_download
 
 # Assumes meteor-1.5.jar is in the same directory as meteor.py.  Change as needed.
 METEOR_JAR = 'meteor-1.5.jar'
@@ -20,13 +18,12 @@ class PyMeteorWrapper:
 
     def __init__(self, language):
         """Try to instantiate and run METEOR. Will raise exceptions in case of errors."""
-        self.my_dir = os.path.dirname(os.path.abspath(__file__))
         self.language = language
-        self.check_meteor()
+        self.meteor_path = self.check_meteor()
         self.meteor_cmd = ['java', '-jar', '-Xmx2G', METEOR_JAR,
                            '-', '-', '-stdio', '-l', self.language, '-norm']
         self.meteor_p = subprocess.Popen(self.meteor_cmd,
-                                         cwd=self.my_dir,
+                                         cwd=os.path.dirname(self.meteor_path),
                                          stdin=subprocess.PIPE,
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
@@ -38,14 +35,8 @@ class PyMeteorWrapper:
         # check that we can actually run Java
         # we don't care what output we get, just that it doesn't fail
         subprocess.check_output(['java', '-version'], stderr=subprocess.STDOUT)
-
         # check and download meteor
-        if not os.path.isfile(os.path.join(self.my_dir, METEOR_JAR)):
-            logger.warn(f'METEOR not found at {self.my_path} -- downloading. This may take a few minutes.')
-            tmp_fname, _ = urllib.request.urlretrieve(METEOR_URL)
-            logger.warn(f'Extracting meteor to {self.my_path}')
-            tmp_tgz = tarfile.open(tmp_fname, 'r:gz')
-            tmp_tgz.extractall(path=self.my_dir)
+        return ensure_download('meteor', METEOR_JAR, METEOR_URL)
 
     def compute_score(self, predictions, references):
         assert(len(predictions) == len(references))
