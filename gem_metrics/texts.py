@@ -98,11 +98,8 @@ class Submission:
         self.name = data['submission_name']
         self.param_count = data.get('param_count')
         self.entries = {}
-        for key in self.all_data.keys():
-            if not key.endswith('_val'):
-                continue
-            dataset_name = key[:-4]
-            self.entries[dataset_name] = Predictions(self.all_data[key])
+        for key, data in self.all_data['tasks'].items():
+            self.entries[key] = Predictions(data)
 
     def predictions_for(self, dataset_name: str) -> Optional[Predictions]:
         """Return per-dataset predictions"""

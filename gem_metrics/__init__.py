@@ -49,7 +49,7 @@ def process_submission(outs: Submission, refs: Optional[dict]) -> dict:
     given and the dataset names correspond to GEM task datasets, default references are used.
     Returns a dict keyed by dataset names, containing the dicts for each dataset's results.
     """
-    values = {}
+    values = {'submission_name': outs.name}
     for dataset in outs.datasets:
         outs_ds = outs.predictions_for(dataset)
         # use default reference files if no custom ones are provided
