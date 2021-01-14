@@ -25,14 +25,8 @@ def main(args):
                 assert(sorted(list(raw_ref_data.keys())) == sorted(data.datasets))
                 for dataset in data.datasets:
                     ref_data[dataset] = gem_metrics.References(ref_data[dataset])
-        values = {}
-        for dataset in data.datasets:
-            outs = data.predictions_for(dataset)
-            # use default reference files if no custom ones are provided
-            refs = ref_data[dataset] if ref_data else gem_metrics.load_references(dataset)
-            if refs:
-                assert(len(refs) == len(outs))
-            values[dataset] = gem_metrics.compute(outs, refs)
+
+        values = gem_metrics.process_submission(data, ref_data)
 
     # single-file mode
     else:
