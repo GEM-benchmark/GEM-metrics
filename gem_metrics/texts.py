@@ -2,15 +2,17 @@
 
 from typing import Optional
 import json
+from functools import partial
 import string
 import nltk
 from .data import nltk_ensure_download
+from pycountry import languages
 
 
 class Texts:
     """Holder class for output texts or references."""
 
-    def __init__(self, key, data, tokenize_func):
+    def __init__(self, key, data):
         self.key = key
         if not isinstance(data, dict):
             self.filename = data
@@ -20,13 +22,21 @@ class Texts:
         else:
             self.filename = data.get('filename')
         self.all_data = data['values']
-        self.language = data['language']
+
+        if len(data['language']) > 3 or data['language'][0].isupper():
+            self.language = languages.get(name=data['language'])
+        elif len(data['language']) == 3:
+            self.language = languages.get(alpha_3=data['language'])
+        else:
+            self.language = languages.get(alpha_2=data['language'])
 
         self.data = [item[key] for item in self.all_data]
 
         # detect if we're using multiple texts per instance
         self.multi_ref = isinstance(self.data[0], list)
         # tokenize & keep a list and a whitespace version
+        nltk_ensure_download('tokenizers/punkt')
+        tokenize_func = partial(nltk.tokenize.word_tokenize, language=self.language.name.lower())
         self._tokenized = [([tokenize_func(i) for i in item]
                             if self.multi_ref
                             else tokenize_func(item))
@@ -61,8 +71,7 @@ class Predictions(Texts):
     PUNCTUATION = set(string.punctuation)
 
     def __init__(self, data):
-        nltk_ensure_download('tokenizers/punkt')
-        super().__init__(key='generated', data=data, tokenize_func=nltk.tokenize.word_tokenize)
+        super().__init__(key='generated', data=data)
         self._lc_tokenized = [[w.lower() for w in item] for item in self.list_tokenized]
         self._nopunct_lc_tokenized = [[w for w in item if w not in self.PUNCTUATION] for item in self._lc_tokenized]
 
@@ -81,8 +90,7 @@ class References(Texts):
     """Data holder class for references/targets."""
 
     def __init__(self, data):
-        nltk_ensure_download('tokenizers/punkt')
-        super().__init__(key='target', data=data, tokenize_func=nltk.tokenize.word_tokenize)
+        super().__init__(key='target', data=data)
 
 
 class Submission:

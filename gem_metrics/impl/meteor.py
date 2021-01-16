@@ -19,9 +19,11 @@ class PyMeteorWrapper:
     def __init__(self, language):
         """Try to instantiate and run METEOR. Will raise exceptions in case of errors."""
         self.language = language
+        # meteor uses a wrong language abbreviation for Czech
+        meteor_language = 'cz' if self.language == 'cs' else self.language
         self.meteor_path = self.check_meteor()
         self.meteor_cmd = ['java', '-jar', '-Xmx2G', METEOR_JAR,
-                           '-', '-', '-stdio', '-l', self.language, '-norm']
+                           '-', '-', '-stdio', '-l', meteor_language, '-norm']
         self.meteor_p = subprocess.Popen(self.meteor_cmd,
                                          cwd=os.path.dirname(self.meteor_path),
                                          stdin=subprocess.PIPE,

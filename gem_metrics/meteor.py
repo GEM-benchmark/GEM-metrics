@@ -11,7 +11,7 @@ class Meteor(ReferencedMetric):
 
     def compute(self, predictions, references):
         try:
-            m = PyMeteorWrapper('en')
+            m = PyMeteorWrapper(predictions.language.alpha_2)
         except Exception as e:
             logger.warn(f'Cannot run Meteor -- Skipping: {str(e)}')
             return {'meteor': None}
