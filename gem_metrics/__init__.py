@@ -8,7 +8,9 @@ from .texts import Predictions, References, Submission
 
 # Metric implementations
 from .meteor import Meteor
+from .bertscore import BERTScore
 from .bleu import BLEU
+from .bleurt import BLEURT
 from .rouge import ROUGE
 from .msttr import MSTTR
 from .ngrams import NGramStats
@@ -16,7 +18,7 @@ from .data import ensure_download
 
 # Lists of metrics to use
 # TODO make this populate automatically based on imports
-REFERENCED_METRICS = [BLEU, Meteor, ROUGE]
+REFERENCED_METRICS = [BERTScore, BLEU, BLEURT, Meteor, ROUGE]
 REFERENCELESS_METRICS = [MSTTR, NGramStats]
 
 

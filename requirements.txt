@@ -1,6 +1,9 @@
+bert_score
+datasets>=1.2.1
 nltk
 numpy
 rouge-score
 logzero
 pycountry
+git+https://github.com/google-research/bleurt.git
 git+https://github.com/tuetschek/sacrebleu
