@@ -1,17 +1,26 @@
 #!/usr/bin/env python3
 
 from argparse import ArgumentParser
+from dataclasses import dataclass
 import json
 import sys
 
 import gem_metrics
 
 
-def main(args):
+@dataclass
+class Config:
+    predictions_file: str = ""
+    references_file: str = ""
+    output_file: str = ""
+
+
+def main(config):
     """Main entry point -- load inputs, call metrics measuring, print outputs"""
 
+
     # load system predictions
-    with open(args.predictions_file, encoding='UTF-8') as fh:
+    with open(config.predictions_file, encoding='UTF-8') as fh:
         data = json.load(fh)
 
     # multi-file submissions
@@ -19,7 +28,7 @@ def main(args):
         data = gem_metrics.Submission(data)
 
         ref_data = None
-        if args.references_file:
+        if config.references_file:
             with open(args.references_file, encoding='UTF-8') as fh:
                 raw_ref_data = json.load(fh)
                 assert(sorted(list(raw_ref_data.keys())) == sorted(data.datasets))
@@ -33,7 +42,7 @@ def main(args):
         outs = gem_metrics.Predictions(data)
 
         # load references, if available
-        if args.references_file is not None:
+        if config.references_file is not None:
             refs = gem_metrics.References(args.references_file)
             assert(len(refs) == len(outs))
 
@@ -41,16 +50,22 @@ def main(args):
 
     # print output
     out_fh = sys.stdout
-    if args.output_file != '-':
+    if config.output_file:
         out_fh = open(args.output_file, 'w', encoding='UTF-8')
     print(json.dumps(values, ensure_ascii=False, indent=4), file=out_fh)
 
 
 if __name__ == '__main__':
     ap = ArgumentParser(description='GEM automatic metrics script')
-    ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='-')
-    ap.add_argument('-r', '--references-file', '--references', '--refs', type=str, help='Path to references JSON file')
     ap.add_argument('predictions_file', type=str, help='Path to system outputs JSON file')
-
+    ap.add_argument('-r', '--references-file', '--references', '--refs', type=str, help='Path to references JSON file')
+    ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='')
     args = ap.parse_args()
-    main(args)
+
+    # Workaround for metrics that use cmd flags - write all args to config.
+    config = Config(
+        predictions_file=args.predictions_file,
+        references_file=args.references_file,
+        output_file=args.output_file)
+    sys.argv = sys.argv[:1]
+    main(config)
