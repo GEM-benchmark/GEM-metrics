@@ -12,7 +12,7 @@ class BLEURT(ReferencedMetric):
         self.metric = load_metric('bleurt', checkpoint_path)
 
     def compute(self, predictions, references):
-        """If it can run, return BLEURT, otherwise skip."""
+        """Compute the BLEURT score. Multi-ref will be averaged."""
         # Use untokenized here since the module uses its own tokenizer.
         if isinstance(references.untokenized[0], list):
             # For multi-reference data, compute micro-average.
