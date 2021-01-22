@@ -55,6 +55,7 @@ def process_submission(outs: Submission, refs: Optional[dict]) -> dict:
     """
     values = {'submission_name': outs.name}
     for dataset in outs.datasets:
+        logger.info(f'Computing metrics for {dataset}...')
         outs_ds = outs.predictions_for(dataset)
         # use default reference files if no custom ones are provided
         refs_ds = refs[dataset] if refs else load_references(dataset)
