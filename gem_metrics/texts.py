@@ -30,7 +30,11 @@ class Texts:
         else:
             self.language = languages.get(alpha_2=data['language'])
 
-        self.data = [item[key] for item in self.all_data]
+        # allow bare lists of strings as well as lists of dicts
+        if self.all_data and isinstance(self.all_data[0], str):
+            self.data = [item for item in self.all_data]
+        else:
+            self.data = [item[key] for item in self.all_data]
 
         # detect if we're using multiple texts per instance
         self.multi_ref = isinstance(self.data[0], list)
@@ -107,6 +111,7 @@ class Submission:
         self.param_count = data.get('param_count')
         self.entries = {}
         for key, data in self.all_data['tasks'].items():
+            data['filename'] = self.name + '/' + key
             self.entries[key] = Predictions(data)
 
     def predictions_for(self, dataset_name: str) -> Optional[Predictions]:
