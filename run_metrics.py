@@ -12,6 +12,7 @@ import gem_metrics
 class Config:
     predictions_file: str = ""
     references_file: str = ""
+    sources_file: str = ""
     output_file: str = ""
 
 
@@ -24,6 +25,7 @@ def main(config):
         data = json.load(fh)
 
     # multi-file submissions
+    # TODO: incorporate metrics requiring source sentences as well (eg. SARI)
     if isinstance(data, dict) and 'submission_name' in data:
         data = gem_metrics.Submission(data)
 
@@ -40,13 +42,20 @@ def main(config):
     # single-file mode
     else:
         outs = gem_metrics.Predictions(data)
+        srcs = None
+        refs = None
 
         # load references, if available
         if config.references_file is not None:
             refs = gem_metrics.References(args.references_file)
             assert(len(refs) == len(outs))
 
-        values = gem_metrics.compute(outs, refs)
+        # load sources, if available
+        if config.sources_file is not None:
+            srcs = gem_metrics.Sources(args.sources_file)
+            assert(len(srcs) == len(outs))
+
+        values = gem_metrics.compute(outs, refs, srcs)
 
     # print output
     out_fh = sys.stdout
@@ -59,6 +68,7 @@ if __name__ == '__main__':
     ap = ArgumentParser(description='GEM automatic metrics script')
     ap.add_argument('predictions_file', type=str, help='Path to system outputs JSON file')
     ap.add_argument('-r', '--references-file', '--references', '--refs', type=str, help='Path to references JSON file')
+    ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to references JSON file')
     ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='')
     args = ap.parse_args()
 
@@ -66,6 +76,7 @@ if __name__ == '__main__':
     config = Config(
         predictions_file=args.predictions_file,
         references_file=args.references_file,
+        sources_file=args.sources_file,
         output_file=args.output_file)
     sys.argv = sys.argv[:1]
     main(config)
