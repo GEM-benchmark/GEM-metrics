@@ -24,7 +24,7 @@ REFERENCELESS_METRICS = [MSTTR, NGramStats]
 SOURCE_AND_REFERENCED_METRICS = [SARI]
 
 
-def compute(outs: Predictions, refs: Optional[References], srcs: Optional[Sources]) -> dict:
+def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional[Sources] = None) -> dict:
     """Main metrics computation routine for a single dataset.
     Expects a Predictions and a References object, holding system outputs and corresponding
     references (References may be None -- only referenceless metrics are computed in such a case).
@@ -41,6 +41,8 @@ def compute(outs: Predictions, refs: Optional[References], srcs: Optional[Source
 
     # compute ref-based metrics
     if refs is not None:
+        if len(refs) != len(outs):
+            raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. references: {len(refs)}')
         values['references_file'] = refs.filename
         for metric_class in REFERENCED_METRICS:
             metric = metric_class()
@@ -48,6 +50,8 @@ def compute(outs: Predictions, refs: Optional[References], srcs: Optional[Source
 
     # compute ref-src-based metrics
     if refs is not None and srcs is not None:
+        if len(srcs) != len(outs):
+            raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. sources: {len(srcs)}')
         values['references_file'] = refs.filename
         for metric_class in SOURCE_AND_REFERENCED_METRICS:
             metric = metric_class()
@@ -68,8 +72,6 @@ def process_submission(outs: Submission, refs: Optional[dict]) -> dict:
         outs_ds = outs.predictions_for(dataset)
         # use default reference files if no custom ones are provided
         refs_ds = refs[dataset] if refs else load_references(dataset)
-        if refs:
-            assert(len(refs_ds) == len(outs_ds))
         values[dataset] = compute(outs_ds, refs_ds)
     return values
 
@@ -81,6 +83,8 @@ _DATASET_REFERENCES_URLS = {
     'common_gen_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/common_gen_val.json',
     'cs_restaurants_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/cs_restaurants_test.json',
     'cs_restaurants_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/cs_restaurants_val.json',
+    'dart_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/dart_test.json',
+    'dart_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/dart_val.json',
     'e2e_nlg_cleaned_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/e2e_nlg_cleaned_test.json',
     'e2e_nlg_cleaned_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/e2e_nlg_cleaned_val.json',
     'turk_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_test.json',
