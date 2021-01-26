@@ -2,6 +2,8 @@
 
 from .metric import SourceAndReferencedMetric
 from collections import Counter
+import sacrebleu
+import sacremoses
 
 class SARI(SourceAndReferencedMetric):
     """SARI score for evaluating paraphrasing and other text generation models.
@@ -22,9 +24,20 @@ class SARI(SourceAndReferencedMetric):
     """
 
     def compute(self, predictions, references, sources):
-        srcs = sources.untokenized
-        preds = predictions.untokenized
-        refs = references.untokenized
+
+        srcs = [
+            self.normalize(sent)
+            for sent in sources.untokenized
+        ]
+        preds = [
+            self.normalize(sent)
+            for sent in predictions.untokenized
+        ]
+        refs = [
+            [self.normalize(sent) for sent in ref_sents]
+            for ref_sents in references.untokenized
+        ]
+
         sari_score = []
         for i in range(len(srcs)):
             sari_score.append(self.SARIsent(srcs[i], preds[i], refs[i]))
@@ -122,8 +135,8 @@ class SARI(SourceAndReferencedMetric):
     def SARIsent (self, ssent, csent, rsents) :
         numref = len(rsents)    
 
-        s1grams = ssent.lower().split(" ")
-        c1grams = csent.lower().split(" ")
+        s1grams = ssent.split(" ")
+        c1grams = csent.split(" ")
         s2grams = []
         c2grams = []
         s3grams = []
@@ -136,7 +149,7 @@ class SARI(SourceAndReferencedMetric):
         r3gramslist = []
         r4gramslist = []
         for rsent in rsents:
-            r1grams = rsent.lower().split(" ")    
+            r1grams = rsent.split(" ")
             r2grams = []
             r3grams = []
             r4grams = []
@@ -187,5 +200,30 @@ class SARI(SourceAndReferencedMetric):
         avgaddscore = sum([add1score,add2score,add3score,add4score])/4
         finalscore = (avgkeepscore + avgdelscore + avgaddscore ) / 3
         return finalscore
+
+    def normalize(self, sentence, lowercase: bool = True, tokenizer: str = '13a', return_str: bool = True):
+
+        # Normalization is requried for the ASSET dataset to allow using space
+        # to split the sentence. Even though Wiki-Auto and TURK datasets,
+        # do not require normalization, we do it for consistency.
+        # Code adapted from the EASSE library [1] written by the authors of the ASSET dataset.
+        # [1] https://github.com/feralvam/easse/blob/580bba7e1378fc8289c663f864e0487188fe8067/easse/utils/preprocessing.py#L7
+
+        if lowercase:
+            sentence = sentence.lower()
+
+        if tokenizer in ['13a', 'intl']:
+            normalized_sent = sacrebleu.TOKENIZERS[tokenizer]()(sentence)
+        elif tokenizer == 'moses':
+            normalized_sent = sacremoses.MosesTokenizer().tokenize(sentence, return_str=True, escape=False)
+        elif tokenizer == 'penn':
+            normalized_sent = sacremoses.MosesTokenizer().penn_tokenize(sentence, return_str=True)
+        else:
+            normalized_sent = sentence
+
+        if not return_str:
+            normalized_sent = normalized_sent.split()
+
+        return normalized_sent
 
 

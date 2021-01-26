@@ -7,3 +7,4 @@ logzero
 pycountry
 git+https://github.com/google-research/bleurt.git
 sacrebleu>=1.5.0
+sacremoses
