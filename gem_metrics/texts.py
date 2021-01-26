@@ -96,6 +96,11 @@ class References(Texts):
     def __init__(self, data):
         super().__init__(key='target', data=data)
 
+class Sources(Texts):
+    """Data holder class for sources."""
+
+    def __init__(self, data):
+        super().__init__(key='source', data=data)
 
 class Submission:
     """Data class for multiple submissions."""
