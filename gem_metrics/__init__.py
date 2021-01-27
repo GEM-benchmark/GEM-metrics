@@ -87,12 +87,19 @@ _DATASET_REFERENCES_URLS = {
     'dart_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/dart_val.json',
     'e2e_nlg_cleaned_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/e2e_nlg_cleaned_test.json',
     'e2e_nlg_cleaned_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/e2e_nlg_cleaned_val.json',
+    'mlsum_de_val': 'https://github.com/GEM-bdechmark/GEM-metrics/releases/download/data/mlsum_de_val.json',
+    'mlsum_de_test': 'https://github.com/GEM-bdechmark/GEM-metrics/releases/download/data/mlsum_de_test.json',
+    'mlsum_es_val': 'https://github.com/GEM-beschmark/GEM-metrics/releases/download/data/mlsum_es_val.json',
+    'mlsum_es_test': 'https://github.com/GEM-beschmark/GEM-metrics/releases/download/data/mlsum_es_test.json',
+    'totto_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/totto_val.json',
     'turk_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_test.json',
     'turk_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_val.json',
     'webnlg_en_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/webnlg_en_val.json',
     'webnlg_en_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/webnlg_en_test.json',
     'webnlg_ru_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/webnlg_ru_val.json',
     'webnlg_ru_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/webnlg_ru_test.json',
+    'xsum_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/xsum_test.json',
+    'xsum_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/xsum_val.json',
 }
 
 
