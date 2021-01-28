@@ -21,7 +21,7 @@ class BERTScore(ReferencedMetric):
                 predictions=predictions.untokenized,
                 references=references.untokenized)
         # Use language-appropriate scorer.
-        score = self.metric.compute(lang=predictions.language.alpha_2)
+        score = self.metric.compute(lang=predictions.language.alpha_2, model_type ='distilbert-base-uncased')
         score['precision'] = np.mean(self._make_serializable(score['precision']))
         score['recall'] = np.mean(self._make_serializable(score['recall']))
         score['f1'] = np.mean(self._make_serializable(score['f1']))
