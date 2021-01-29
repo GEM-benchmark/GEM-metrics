@@ -91,6 +91,8 @@ _DATASET_REFERENCES_URLS = {
     'mlsum_de_test': 'https://github.com/GEM-bdechmark/GEM-metrics/releases/download/data/mlsum_de_test.json',
     'mlsum_es_val': 'https://github.com/GEM-beschmark/GEM-metrics/releases/download/data/mlsum_es_val.json',
     'mlsum_es_test': 'https://github.com/GEM-beschmark/GEM-metrics/releases/download/data/mlsum_es_test.json',
+    'schema_guided_dstc8_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/schema_guided_dstc8_test.json',
+    'schema_guided_dstc8_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/schema_guided_dstc8_val.json',
     'totto_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/totto_val.json',
     'turk_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_test.json',
     'turk_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_val.json',

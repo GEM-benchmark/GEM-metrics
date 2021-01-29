@@ -7,7 +7,7 @@ import numpy as np
 
 class BLEURT(ReferencedMetric):
     """BLEURT uses the tiny checkpoint for efficient CPU runtime."""
-    def __init__(self, checkpoint_path="bleurt-tiny-128"):
+    def __init__(self, checkpoint_path="bleurt-base-128"):
         """Load the BLEURT checkpoint into memory."""
         self.metric = load_metric('bleurt', checkpoint_path)
 
