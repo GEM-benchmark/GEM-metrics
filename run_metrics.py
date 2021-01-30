@@ -24,8 +24,6 @@ def main(config):
         config.metric_list.append('bleurt')
 
     metric_dict = gem_metrics.metric_list_to_metric_dict(config.metric_list)
-    import ipdb; ipdb.set_trace()
-
 
     # load system predictions
     with open(config.predictions_file, encoding='UTF-8') as fh:
