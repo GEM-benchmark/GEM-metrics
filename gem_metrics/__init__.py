@@ -99,7 +99,7 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
         if len(srcs) != len(outs):
             raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. sources: {len(srcs)}')
         values['references_file'] = refs.filename
-        for metric_class in metrics_dict['source_and_referenced_metrics']:
+        for metric_class in metrics_dict['sourced_and_referenced_metrics']:
             metric = metric_class()
             values.update(metric.compute(outs, refs, srcs))
     return values
