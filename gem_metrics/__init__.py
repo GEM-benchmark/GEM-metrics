@@ -12,10 +12,12 @@ from .bertscore import BERTScore
 from .bleu import BLEU
 from .bleurt import BLEURT
 from .rouge import ROUGE
+from .local_recall import LocalRecall
 from .msttr import MSTTR
 from .ngrams import NGramStats
 from .data import ensure_download
 from .sari import SARI
+
 
 def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
     '''
@@ -29,6 +31,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'bertscore': BERTScore,
         'bleu': BLEU,
         'bleurt': BLEURT,
+        'local_recall': LocalRecall,
         'meteor': Meteor,
         'rouge': ROUGE,
         'msttr': MSTTR,
@@ -40,6 +43,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'bertscore': 'referenced',
         'bleu': 'referenced',
         'bleurt': 'referenced',
+        'local_recall': 'referenced',
         'meteor': 'referenced',
         'rouge': 'referenced',
         'msttr': 'referenceless',
@@ -68,6 +72,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
     }
 
     return metric_dict
+
 
 def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional[Sources] = None, metrics_dict: Dict[str, List] = None) -> Dict:
     """Main metrics computation routine for a single dataset.

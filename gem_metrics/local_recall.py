@@ -23,10 +23,12 @@ class LocalRecall(ReferencedMetric):
     """
 
     def compute(self, predictions, references):
-        results = self.local_recall_scores(predictions.list_tokenized_lower_nopunct,
-                                           references.list_tokenized_lower_nopunct)
-        return results
+        results = LocalRecall.local_recall_scores(predictions.list_tokenized_lower_nopunct,
+                                                  references.list_tokenized_lower_nopunct)
 
+        return {'local_recall': results}
+
+    @staticmethod
     def build_reference_index(refs):
         """
         Build reference index for a given item.
@@ -41,6 +43,7 @@ class LocalRecall(ReferencedMetric):
             importance_index[count].add(word)
         return importance_index
 
+    @staticmethod
     def check_item(prediction, refs):
         """
         Check whether the predictions capture words that are frequently mentioned.
@@ -48,7 +51,7 @@ class LocalRecall(ReferencedMetric):
         This function produces more info than strictly needed.
         Use the detailed results to analyze system performance.
         """
-        reference_index = build_reference_index(refs)
+        reference_index = LocalRecall.build_reference_index(refs)
         pred_tokens = set(prediction)
         results = dict()
         for n in range(1, len(refs) + 1):
@@ -66,21 +69,24 @@ class LocalRecall(ReferencedMetric):
                 results[f'item-score-{n}'] = None
         return results
 
+    @staticmethod
     def replace(a_list, to_replace, replacement):
         """
         Returns a_list with all occurrences of to_replace replaced with replacement.
         """
         return [replacement if x == to_replace else x for x in a_list]
 
+    @staticmethod
     def aggregate_score(outcomes):
         """
         Produce an aggregate score based on a list of tuples: [(size_overlap, size_refs)]
         """
         overlaps, ref_numbers = zip(*outcomes)
-        ref_numbers = replace(ref_numbers, None, 0)
+        ref_numbers = LocalRecall.replace(ref_numbers, None, 0)
         score = sum(overlaps) / sum(ref_numbers)
         return score
 
+    @staticmethod
     def local_recall_scores(predictions, full_references):
         """
         Compute local recall scores.
@@ -88,9 +94,9 @@ class LocalRecall(ReferencedMetric):
         num_refs = len(full_references[0])
         outcomes = defaultdict(list)
         for pred, refs in zip(predictions, full_references):
-            results = check_item(pred, refs)
+            results = LocalRecall.check_item(pred, refs)
             for n in range(1, num_refs + 1):
                 pair = (results[f'size-overlap-{n}'], results[f'size-refs-{n}'])
                 outcomes[n].append(pair)
-        scores = {n: aggregate_score(outcomes[n]) for n in range(1, num_refs + 1)}
+        scores = {n: LocalRecall.aggregate_score(outcomes[n]) for n in range(1, num_refs + 1)}
         return scores
