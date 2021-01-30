@@ -7,17 +7,24 @@ import sys
 
 import gem_metrics
 
-
 @dataclass
 class Config:
     predictions_file: str = ""
     references_file: str = ""
     sources_file: str = ""
     output_file: str = ""
+    use_heavy_metrics: bool = False
+    metric_list: list = None
 
 
 def main(config):
     """Main entry point -- load inputs, call metrics measuring, print outputs"""
+    if config.use_heavy_metrics:
+        config.metric_list.append('bertscore')
+        config.metric_list.append('bleurt')
+
+    metric_dict = gem_metrics.metric_list_to_metric_dict(config.metric_list)
+    import ipdb; ipdb.set_trace()
 
 
     # load system predictions
@@ -37,7 +44,7 @@ def main(config):
                 for dataset in data.datasets:
                     ref_data[dataset] = gem_metrics.References(ref_data[dataset])
 
-        values = gem_metrics.process_submission(data, ref_data)
+        values = gem_metrics.process_submission(data, ref_data, metric_dict)
 
     # single-file mode
     else:
@@ -55,7 +62,7 @@ def main(config):
             srcs = gem_metrics.Sources(args.sources_file)
             assert(len(srcs) == len(outs))
 
-        values = gem_metrics.compute(outs, refs, srcs)
+        values = gem_metrics.compute(outs, refs, srcs, metric_dict)
 
     # print output
     out_fh = sys.stdout
@@ -63,13 +70,15 @@ def main(config):
         out_fh = open(args.output_file, 'w', encoding='UTF-8')
     print(json.dumps(values, ensure_ascii=False, indent=4), file=out_fh)
 
-
 if __name__ == '__main__':
     ap = ArgumentParser(description='GEM automatic metrics script')
     ap.add_argument('predictions_file', type=str, help='Path to system outputs JSON file')
     ap.add_argument('-r', '--references-file', '--references', '--refs', type=str, help='Path to references JSON file')
     ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to references JSON file')
     ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='')
+    ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore and BLEURT)')
+    #ap.add_argument('--metric-list', type=str, nargs='+', help='')
+    ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'msttr', 'ngram', 'sari'], help='Full metric list default is [bleu, meteor, rouge, msttr, ngram, sari]. You can add bertscore and bleurt by manually adding them in the command line argument here, or by using the --heavy-metrics flag')
     args = ap.parse_args()
 
     # Workaround for metrics that use cmd flags - write all args to config.
@@ -77,6 +86,10 @@ if __name__ == '__main__':
         predictions_file=args.predictions_file,
         references_file=args.references_file,
         sources_file=args.sources_file,
-        output_file=args.output_file)
+        output_file=args.output_file,
+        use_heavy_metrics=args.heavy_metrics,
+        metric_list=args.metric_list,
+    )
+
     sys.argv = sys.argv[:1]
     main(config)

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 from logzero import logger
-from typing import Optional
+from typing import Optional, Dict, List
 
 # Data holder classes
 from .texts import Predictions, References, Sources, Submission
@@ -17,17 +17,63 @@ from .ngrams import NGramStats
 from .data import ensure_download
 from .sari import SARI
 
-# Lists of metrics to use
-# TODO make this populate automatically based on imports
-REFERENCED_METRICS = [BERTScore, BLEU, BLEURT, Meteor, ROUGE]
-REFERENCELESS_METRICS = [MSTTR, NGramStats]
-SOURCE_AND_REFERENCED_METRICS = [SARI]
+def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
+    '''
+    Function that converts a list of strings corresponding to the metric names into a dictionary with three keys,
+    referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics, which are populated by the actual metrics class.
+    '''
+    # convert to set in case there are repeats
+    metric_list = list(set(metric_list))
 
+    metric_name_to_metric_class = {
+        'bertscore': BERTScore,
+        'bleu': BLEU,
+        'bleurt': BLEURT,
+        'meteor': Meteor,
+        'rouge': ROUGE,
+        'msttr': MSTTR,
+        'ngram': NGramStats,
+        'sari': SARI,
+    }
 
-def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional[Sources] = None) -> dict:
+    metric_name_to_metric_type = {
+        'bertscore': 'referenced',
+        'bleu': 'referenced',
+        'bleurt': 'referenced',
+        'meteor': 'referenced',
+        'rouge': 'referenced',
+        'msttr': 'referenceless',
+        'ngram': 'referenceless',
+        'sari': 'sourced_and_referenced',
+    }
+
+    referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
+
+    for metric_name in metric_list:
+        metric_class = metric_name_to_metric_class[metric_name]
+        metric_type = metric_name_to_metric_type[metric_name]
+        if metric_type == 'referenced':
+            referenced_list.append(metric_class)
+        elif metric_type == 'referenceless':
+            referenceless_list.append(metric_class)
+        elif metric_type == 'sourced_and_referenced':
+            sourced_and_referenced_list.append(metric_class)
+        else:
+            raise NotImplementedError(f'{metric_type} is not one of [referenced, referenceless, sourced_and_referenced]. Please check the metric_name_to_metric_type dict.')
+
+    metric_dict = {
+        'referenced_metrics': referenced_list,
+        'referenceless_metrics': referenceless_list,
+        'sourced_and_referenced_metrics': sourced_and_referenced_list,
+    }
+
+    return metric_dict
+
+def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional[Sources] = None, metrics_dict: Dict[str, List] = None) -> Dict:
     """Main metrics computation routine for a single dataset.
     Expects a Predictions and a References object, holding system outputs and corresponding
     references (References may be None -- only referenceless metrics are computed in such a case).
+    metrics_dict is a dictionary with three keys: referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics. Each of those keys' values are a List of the specific metrics.
     Returns a dict with the results.
     """
     # initialize values storage
@@ -35,7 +81,7 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
               'N': len(outs)}
 
     # compute referenceless metrics
-    for metric_class in REFERENCELESS_METRICS:
+    for metric_class in metrics_dict['referenceless_metrics']:
         metric = metric_class()
         values.update(metric.compute(outs))
 
@@ -44,7 +90,7 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
         if len(refs) != len(outs):
             raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. references: {len(refs)}')
         values['references_file'] = refs.filename
-        for metric_class in REFERENCED_METRICS:
+        for metric_class in metrics_dict['referenced_metrics']:
             metric = metric_class()
             values.update(metric.compute(outs, refs))
 
@@ -53,13 +99,13 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
         if len(srcs) != len(outs):
             raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. sources: {len(srcs)}')
         values['references_file'] = refs.filename
-        for metric_class in SOURCE_AND_REFERENCED_METRICS:
+        for metric_class in metrics_dict['source_and_referenced_metrics']:
             metric = metric_class()
             values.update(metric.compute(outs, refs, srcs))
     return values
 
 
-def process_submission(outs: Submission, refs: Optional[dict]) -> dict:
+def process_submission(outs: Submission, refs: Optional[Dict], metrics_dict: Dict[str, List]) -> Dict:
     """Process a (potentially) multi-dataset submission. Expects a Submission object
     holding all the predictions, and potentially references in a dictionary keyed by
     dataset name, paralleling the datasets in the submission. If no references are
