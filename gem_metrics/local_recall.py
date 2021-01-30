@@ -5,29 +5,28 @@ from collections import Counter, defaultdict
 class LocalRecall(ReferencedMetric):
     """
     LocalRecall checks the extent to which a model produces the same tokens as the reference data.
-    
-    For each item, tokens receive an importance score. If all N annotators use a particular word, 
+
+    For each item, tokens receive an importance score. If all N annotators use a particular word,
     that word gets an importance score of N.
-    
+
     The output of this metric is a dictionary with {1:score, ..., N: score}.
-    
+
     The local recall metric is based on Van Miltenburg et al. (2018).
     Paper: https://www.aclweb.org/anthology/C18-1147/
     Repository: https://github.com/evanmiltenburg/MeasureDiversity/blob/master/local_recall.py
-    
+
     The main difference is that Van Miltenburg et al. only include content words,
     while the code below just counts ALL tokens, including determiners (a, the) etc.
-    
+
     This means that the scores produced by this code will be higher than the ones produced by the original code.
     The advantage is that we don't have to rely on a part-of-speech tagger.
     """
 
     def compute(self, predictions, references):
-        results = self.local_recall_scores(predictions.list_tokenized_lower_nopunct, 
+        results = self.local_recall_scores(predictions.list_tokenized_lower_nopunct,
                                            references.list_tokenized_lower_nopunct)
         return results
-    
-    
+
     def build_reference_index(refs):
         """
         Build reference index for a given item.
@@ -42,7 +41,6 @@ class LocalRecall(ReferencedMetric):
             importance_index[count].add(word)
         return importance_index
 
-
     def check_item(prediction, refs):
         """
         Check whether the predictions capture words that are frequently mentioned.
@@ -55,19 +53,18 @@ class LocalRecall(ReferencedMetric):
         results = dict()
         for n in range(1, len(refs) + 1):
             overlap = pred_tokens & reference_index[n]
-            results[f'overlap-{n}']         = overlap
-            results[f'size-overlap-{n}']    = len(overlap)
-            results[f'refs-{n}']            = reference_index[n]
-            results[f'size-refs-{n}']       = len(reference_index[n])
+            results[f'overlap-{n}'] = overlap
+            results[f'size-overlap-{n}'] = len(overlap)
+            results[f'refs-{n}'] = reference_index[n]
+            results[f'size-refs-{n}'] = len(reference_index[n])
             # Just in case there are no words at all that occur in all references,
             # Make score equal to None to avoid divide by zero error.
             # This also avoids ambiguity between "no items recalled" and "no items to recall".
             if len(reference_index[n]) > 0:
-                results[f'item-score-{n}']  = len(overlap)/len(reference_index[n])
+                results[f'item-score-{n}'] = len(overlap) / len(reference_index[n])
             else:
                 results[f'item-score-{n}'] = None
         return results
-
 
     def replace(a_list, to_replace, replacement):
         """
@@ -75,16 +72,14 @@ class LocalRecall(ReferencedMetric):
         """
         return [replacement if x == to_replace else x for x in a_list]
 
-
     def aggregate_score(outcomes):
         """
         Produce an aggregate score based on a list of tuples: [(size_overlap, size_refs)]
         """
         overlaps, ref_numbers = zip(*outcomes)
         ref_numbers = replace(ref_numbers, None, 0)
-        score = sum(overlaps)/sum(ref_numbers)
+        score = sum(overlaps) / sum(ref_numbers)
         return score
-
 
     def local_recall_scores(predictions, full_references):
         """
