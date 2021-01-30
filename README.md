@@ -17,10 +17,12 @@ Note that some NLTK stuff may be downloaded into a subdirectory of your checkout
 Usage
 -----
 
-To compute all metrics, run:
+To compute all default metrics for a file, run:
 ```
 ./run_metrics.py [-r references.json] outputs.json
 ```
+
+See [`test_data`](test_data/) for example JSON file formats.
 
 Use `./run_metrics.py -h` to see all available options.
 
