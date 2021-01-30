@@ -22,4 +22,6 @@ To compute all metrics, run:
 ./run_metrics.py [-r references.json] outputs.json
 ```
 
+Use `./run_metrics.py -h` to see all available options.
+
 By default, the “heavy” metrics (BERTScore and BLEURT) aren't computed. Use `--heavy-metrics` to compute them.
