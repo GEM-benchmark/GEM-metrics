@@ -77,7 +77,7 @@ if __name__ == '__main__':
     ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore and BLEURT)')
     #ap.add_argument('--metric-list', type=str, nargs='+', help='')
     ap.add_argument('--metric-list', nargs='+', default=['bleu', 'local_recall', 'meteor', 'rouge', 'msttr', 'ngram', 'sari'],
-                    help=('Full metric list default is [bleu, meteor, rouge, msttr, ngram, sari]. '
+                    help=('Full metric list default is [bleu, local_recall, meteor, rouge, msttr, ngram, sari]. '
                           + 'You can add bertscore and bleurt by manually adding them in the command '
                           + 'line argument here, or by using the --heavy-metrics flag'))
     args = ap.parse_args()
