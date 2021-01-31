@@ -123,7 +123,7 @@ def process_submission(outs: Submission, refs: Optional[Dict], metrics_dict: Dic
         outs_ds = outs.predictions_for(dataset)
         # use default reference files if no custom ones are provided
         refs_ds = refs[dataset] if refs else load_references(dataset)
-        values[dataset] = compute(outs_ds, refs_ds)
+        values[dataset] = compute(outs_ds, refs_ds, metrics_dict=metrics_dict)
     return values
 
 
