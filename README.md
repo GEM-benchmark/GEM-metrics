@@ -1,6 +1,7 @@
 GEM-metrics
 ===========
-Automatic metrics for GEM tasks.
+Automatic metrics for GEM benchmark tasks. Can also be used standalone for evaluation of various natural 
+language generation tasks.
 
 Installation
 ------------
@@ -27,3 +28,8 @@ See [`test_data`](test_data/) for example JSON file formats.
 Use `./run_metrics.py -h` to see all available options.
 
 By default, the “heavy” metrics (BERTScore and BLEURT) aren't computed. Use `--heavy-metrics` to compute them.
+
+
+License
+-------
+Licensed under [the MIT license](LICENSE).
