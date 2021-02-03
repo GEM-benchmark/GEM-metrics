@@ -117,7 +117,8 @@ def process_submission(outs: Submission, refs: Optional[Dict], metrics_dict: Dic
     given and the dataset names correspond to GEM task datasets, default references are used.
     Returns a dict keyed by dataset names, containing the dicts for each dataset's results.
     """
-    values = {'submission_name': outs.name}
+    values = {'submission_name': outs.name,
+              'param_count': outs.param_count}
     for dataset in outs.datasets:
         logger.info(f'Computing metrics for {dataset}...')
         outs_ds = outs.predictions_for(dataset)

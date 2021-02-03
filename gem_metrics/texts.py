@@ -7,6 +7,7 @@ import string
 import nltk
 from .data import nltk_ensure_download
 from pycountry import languages
+from logzero import logger
 
 
 class Texts:
@@ -118,6 +119,8 @@ class Submission:
                 self.all_data = json.load(fh)
         self.name = data['submission_name']
         self.param_count = data.get('param_count')
+        if not self.param_count:
+            logger.warn('Model parameter count not present in the submission file.')
         self.entries = {}
         for key, data in self.all_data['tasks'].items():
             data['filename'] = self.name + '/' + key
