@@ -2,12 +2,10 @@
 
 from typing import Optional
 import json
-from functools import partial
 import string
-import nltk
-from .data import nltk_ensure_download
 from pycountry import languages
 from logzero import logger
+from .tokenize import default_tokenize_func
 
 
 class Texts:
@@ -42,8 +40,7 @@ class Texts:
         # detect if we're using multiple texts per instance
         self.multi_ref = isinstance(self.data[0], list)
         # tokenize & keep a list and a whitespace version
-        nltk_ensure_download('tokenizers/punkt')
-        tokenize_func = partial(nltk.tokenize.word_tokenize, language=self.language.name.lower())
+        tokenize_func = default_tokenize_func(self.language)
         if self.multi_ref:
             self._tokenized = [[tokenize_func(i) for i in inst] for inst in self.data]
             self._ws_tokenized = [[' '.join(i) for i in inst] for inst in self._tokenized]
