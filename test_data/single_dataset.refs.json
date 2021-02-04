@@ -3,17 +3,17 @@
     "values": [
         {
             "target": [
-                "There is a place in the city centre, Alimentum, that is not family-friendly.",
-                "In the city centre there is a venue name Alimentum, this is not a family-friendly venue.",
-                "Alimentum in city centre is not a family-friendly place."
-            ]
-        },
-        {
-            "target": [
                 "Alimentum is not family-friendly, and is near the Burger King in the city centre.",
                 "Near Burger King in city centre is the adult establishment Alimentum.",
                 "Alimentum is not family-friendly. Alimentum is in the city center and it is near Burger King.",
                 "Alimentum is an adult establish found in the city centre area near Burger King."
+            ]
+        },
+        {
+            "target": [
+                "There is a place in the city centre, Alimentum, that is not family-friendly.",
+                "In the city centre there is a venue name Alimentum, this is not a family-friendly venue.",
+                "Alimentum in city centre is not a family-friendly place."
             ]
         }
     ]
