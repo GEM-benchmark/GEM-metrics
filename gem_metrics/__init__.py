@@ -110,11 +110,14 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
     return values
 
 
-def process_submission(outs: Submission, refs: Optional[Dict], metrics_dict: Dict[str, List]) -> Dict:
+def process_submission(outs: Submission, refs: Optional[Dict], srcs: Optional[Dict], metrics_dict: Dict[str, List]) -> Dict:
     """Process a (potentially) multi-dataset submission. Expects a Submission object
-    holding all the predictions, and potentially references in a dictionary keyed by
-    dataset name, paralleling the datasets in the submission. If no references are
-    given and the dataset names correspond to GEM task datasets, default references are used.
+    holding all the predictions, and potentially references and/or sources in a dictionary keyed by
+    dataset name, paralleling the datasets in the submission.
+
+    If no references/sources are given and the dataset names correspond to GEM task datasets,
+    default references/sources are used.
+
     Returns a dict keyed by dataset names, containing the dicts for each dataset's results.
     """
     values = {'submission_name': outs.name,
@@ -123,8 +126,9 @@ def process_submission(outs: Submission, refs: Optional[Dict], metrics_dict: Dic
         logger.info(f'Computing metrics for {dataset}...')
         outs_ds = outs.predictions_for(dataset)
         # use default reference files if no custom ones are provided
-        refs_ds = refs[dataset] if refs else load_references(dataset)
-        values[dataset] = compute(outs_ds, refs_ds, metrics_dict=metrics_dict)
+        refs_ds = refs[dataset] if (refs and dataset in refs) else load_references(dataset)
+        srcs_ds = srcs[dataset] if (srcs and dataset in srcs) else load_sources(dataset)
+        values[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict=metrics_dict)
     return values
 
 
@@ -171,6 +175,25 @@ def load_references(dataset_name: str) -> Optional[References]:
         try:
             dataset_file = ensure_download('references', dataset_name + '.json', _DATASET_REFERENCES_URLS[dataset_name])
             return References(dataset_file)
+        except Exception as e:
+            logger.warn(f'Could not download references for {dataset_name}: {str(e)}')
+            return None
+    return None
+
+
+_DATASET_SOURCES_URLS = {
+    'turk_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_test.json',
+    'turk_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_val.json',
+}
+
+
+def load_sources(dataset_name: str) -> Optional[References]:
+    """Load a file with sources for a standard GEM dataset (attempt download), return None if not present.
+    Note that it can be the same files as for references -- the difference is in the source/target fields inside the JSON structure."""
+    if dataset_name in _DATASET_SOURCES_URLS:
+        try:
+            dataset_file = ensure_download('references', dataset_name + '.json', _DATASET_SOURCES_URLS[dataset_name])
+            return Sources(dataset_file)
         except Exception as e:
             logger.warn(f'Could not download references for {dataset_name}: {str(e)}')
             return None
