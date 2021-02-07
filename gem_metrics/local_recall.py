@@ -91,12 +91,14 @@ class LocalRecall(ReferencedMetric):
         """
         Compute local recall scores.
         """
-        num_refs = len(full_references[0])
+        num_refs = set()
         outcomes = defaultdict(list)
         for pred, refs in zip(predictions, full_references):
             results = LocalRecall.check_item(pred, refs)
-            for n in range(1, num_refs + 1):
+            total_refs = len(refs)
+            num_refs.add(total_refs)
+            for n in range(1, total_refs + 1):
                 pair = (results[f'size-overlap-{n}'], results[f'size-refs-{n}'])
                 outcomes[n].append(pair)
-        scores = {n: LocalRecall.aggregate_score(outcomes[n]) for n in range(1, num_refs + 1)}
+        scores = {n: LocalRecall.aggregate_score(outcomes[n]) for n in range(1, max(num_refs) + 1)}
         return scores
