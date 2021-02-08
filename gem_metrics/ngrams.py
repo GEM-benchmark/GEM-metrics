@@ -40,7 +40,7 @@ class NGramStats(ReferencelessMetric):
             last_ngram_freqs = None  # for conditional entropy, we need lower-level n-grams
             for N in [1, 2, 3]:
                 ngram_freqs, uniq_ngrams, ngram_len = self._ngram_stats(data, N)
-                results[f'distinct-{N}{data_id}'] = len(ngram_freqs) / ngram_len
+                results[f'distinct-{N}{data_id}'] = len(ngram_freqs) / ngram_len if ngram_len > 0 else 0
                 results[f'vocab_size-{N}{data_id}'] = len(ngram_freqs)
                 results[f'unique-{N}{data_id}'] = uniq_ngrams
                 results[f'entropy-{N}{data_id}'] = self._entropy(ngram_freqs)
