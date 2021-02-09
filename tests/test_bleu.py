@@ -29,8 +29,8 @@ class NGramTest(unittest.TestCase):
 
         self.bleu_metric = BLEU()
 
-    def test_bleu_metric_identical_src_tgt(self):
-        """Tests for the base case.
+    def test_bleu_metric_identical_pred_ref(self):
+        """Tests for identical predictions and references (BLEU = 100)
         """
         references = References({"values": self.references_identical, "language": "en"})
         predictions = Predictions({"values": self.predictions, "language": "en"})
@@ -38,8 +38,8 @@ class NGramTest(unittest.TestCase):
             predictions=predictions, references=references)
         self.assertAlmostEqual(calculated_metrics["bleu"], 100.0)
 
-    def test_bleu_metric_mismatched_src_tgt(self):
-        """Tests for the base case.
+    def test_bleu_metric_mismatched_pred_ref(self):
+        """Tests for completely dissimilar predictions and references (BLEU = 0.)
         """
         refs = [
             {
@@ -61,7 +61,7 @@ class NGramTest(unittest.TestCase):
 
 
     def test_bleu_metric_mismatched_empty_tgt(self):
-        """Tests for the base case.
+        """Tests for empty target
         """
         tgt_empty = [
             "",
