@@ -18,10 +18,10 @@ class MSTTR(ReferencelessMetric):
     def __init__(self):
         self.rnd = random.Random(1234)
 
-    def compute(self, predictions):
-        # use MSTTR-100
-        return {'msttr-100': self._MSTTR(predictions.list_tokenized_lower, 100)['msttr_value'],
-                'msttr-100_nopunct': self._MSTTR(predictions.list_tokenized_lower_nopunct, 100)['msttr_value']}
+    def compute(self, predictions, window_size=100):
+        # use MSTTR-100 by default.
+        return {f'msttr-{window_size}': self._MSTTR(predictions.list_tokenized_lower, window_size)['msttr_value'],
+                f'msttr-{window_size}_nopunct': self._MSTTR(predictions.list_tokenized_lower_nopunct, window_size)['msttr_value']}
 
     def _TTR(self, list_of_words):
         "Compute type-token ratio."
