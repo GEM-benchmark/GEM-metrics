@@ -82,8 +82,8 @@ if __name__ == '__main__':
     ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to references JSON file')
     ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='')
     ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore and BLEURT)')
-    ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'msttr', 'ngram', 'sari'],
-                    help=('Full metric list default is [bleu, meteor, rouge, msttr, ngram, sari]. '
+    ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'msttr', 'ngram', 'sari', 'local_recall'],
+                    help=('Full metric list default is [bleu, meteor, rouge, msttr, ngram, sari, local_recall]. '
                           + 'You can add bertscore and bleurt by manually adding them in the command '
                           + 'line argument here, or by using the --heavy-metrics flag'))
     args = ap.parse_args()
