@@ -2,11 +2,22 @@ import unittest
 
 from numpy.lib.function_base import place
 from tests.inputs import TestData
+from tests.test_referenced import ReferencedMetricTest
 from gem_metrics.bleu import BLEU
 
 
 
-class BleuTest(unittest.TestCase):
+class BleuTest2(ReferencedMetricTest):
+
+    def setUp(self):
+        super().setUp()
+        self.expected_result_basic = {'bleu': 32.56}
+        self.expected_result_identical_pred_ref = {'bleu': 100}
+        self.expected_result_mismatched_pred_ref = {'bleu': 0.505}
+        self.expected_result_empty_pred_ref = {'bleu': 0}
+        
+
+class BleuTest():
 
     test_rust_tokenizer = True
 
