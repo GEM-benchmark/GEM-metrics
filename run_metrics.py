@@ -29,6 +29,7 @@ def main(config):
     # load system predictions
     with open(config.predictions_file, encoding='UTF-8') as fh:
         data = json.load(fh)
+        data.update({"filename": config.predictions_file})
 
     # multi-file submissions
     if isinstance(data, dict) and 'submission_name' in data:
@@ -79,12 +80,12 @@ if __name__ == '__main__':
     ap = ArgumentParser(description='GEM automatic metrics script')
     ap.add_argument('predictions_file', type=str, help='Path to system outputs JSON file')
     ap.add_argument('-r', '--references-file', '--references', '--refs', type=str, help='Path to references JSON file')
-    ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to references JSON file')
+    ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to sources JSON file')
     ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='')
     ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore and BLEURT)')
     ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'msttr', 'ngram', 'sari', 'local_recall'],
                     help=('Full metric list default is [bleu, meteor, rouge, msttr, ngram, sari, local_recall]. '
-                          + 'You can add bertscore and bleurt by manually adding them in the command '
+                          + 'You can add bertscore, bleurt and safeval by manually adding them in the command '
                           + 'line argument here, or by using the --heavy-metrics flag'))
     args = ap.parse_args()
 

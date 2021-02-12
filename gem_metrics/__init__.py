@@ -17,6 +17,7 @@ from .msttr import MSTTR
 from .ngrams import NGramStats
 from .data import ensure_download
 from .sari import SARI
+from .safeval import SAFEval
 
 
 def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
@@ -37,6 +38,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': MSTTR,
         'ngram': NGramStats,
         'sari': SARI,
+        'safeval': SAFEval,
     }
 
     metric_name_to_metric_type = {
@@ -49,9 +51,10 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': 'referenceless',
         'ngram': 'referenceless',
         'sari': 'sourced_and_referenced',
+        'safeval': 'sourced',
     }
 
-    referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
+    referenced_list, referenceless_list, sourced_and_referenced_list, sourced_list = [], [], [], []
 
     for metric_name in metric_list:
         metric_class = metric_name_to_metric_class[metric_name]
@@ -62,6 +65,8 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
             referenceless_list.append(metric_class)
         elif metric_type == 'sourced_and_referenced':
             sourced_and_referenced_list.append(metric_class)
+        elif metric_type == 'sourced':
+            sourced_list.append(metric_class)
         else:
             raise NotImplementedError(f'{metric_type} is not one of [referenced, referenceless, sourced_and_referenced]. Please check the metric_name_to_metric_type dict.')
 
@@ -69,6 +74,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'referenced_metrics': referenced_list,
         'referenceless_metrics': referenceless_list,
         'sourced_and_referenced_metrics': sourced_and_referenced_list,
+        'sourced_metrics': sourced_list,
     }
 
     return metric_dict
@@ -107,6 +113,16 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
         for metric_class in metrics_dict['sourced_and_referenced_metrics']:
             metric = metric_class()
             values.update(metric.compute(outs, refs, srcs))
+
+    # compute src-based metrics
+    if srcs is not None:
+        if len(srcs) != len(outs):
+            raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. sources: {len(srcs)}')
+        values['sources_file'] = srcs.filename
+        for metric_class in metrics_dict['sourced_metrics']:
+            metric = metric_class()
+            values.update(metric.compute(outs, srcs))
+
     return values
 
 
