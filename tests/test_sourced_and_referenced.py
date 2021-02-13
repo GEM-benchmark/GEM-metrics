@@ -1,4 +1,4 @@
-"""Test class for referenced tests
+"""Test class for metrics that use both source and a reference.
 """
 import unittest
 from tests.inputs import TestData

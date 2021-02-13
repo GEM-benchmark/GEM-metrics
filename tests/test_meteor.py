@@ -1,8 +1,8 @@
 import unittest
 import gem_metrics
-from tests.test_referenced import ReferencedMetricTest
+from tests.test_referenced import TestReferencedMetric
 
-class TestMeteor(ReferencedMetricTest, unittest.TestCase):
+class TestMeteor(TestReferencedMetric, unittest.TestCase):
 
     def setUp(self):
         super().setUp()

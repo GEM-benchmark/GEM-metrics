@@ -1,11 +1,11 @@
 import unittest
 import gem_metrics
-from tests.test_referenced import ReferencedMetricTest
+from tests.test_referenced import TestReferencedMetric
 
 
 
 
-class TestBleu(ReferencedMetricTest, unittest.TestCase):
+class TestBleu(TestReferencedMetric, unittest.TestCase):
 
     def setUp(self):
         super().setUp()

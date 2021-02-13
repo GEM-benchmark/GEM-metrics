@@ -1,12 +1,12 @@
-from tests.test_sourced_and_referenced import SourcedAndReferencedMetricTest
+from tests.test_sourced_and_referenced import TestSourcedAndReferencedMetric
 import unittest
 import gem_metrics
-from tests.test_sourced_and_referenced import SourcedAndReferencedMetricTest
+from tests.test_sourced_and_referenced import TestSourcedAndReferencedMetric
 
 
 
 
-class TestSari(SourcedAndReferencedMetricTest, unittest.TestCase):
+class TestSari(TestSourcedAndReferencedMetric, unittest.TestCase):
 
     def setUp(self):
         super().setUp()
