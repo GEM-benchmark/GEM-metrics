@@ -5,7 +5,7 @@ from tests.test_referenced import ReferencedMetricTest
 
 
 
-class BleuTest(ReferencedMetricTest, unittest.TestCase):
+class TestBleu(ReferencedMetricTest, unittest.TestCase):
 
     def setUp(self):
         super().setUp()

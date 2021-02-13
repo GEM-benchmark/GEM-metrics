@@ -7,7 +7,7 @@ from tests.inputs import TestData
 # TODO: add multilingual tests
 
 
-class NGramTest(unittest.TestCase):
+class TestNGram(unittest.TestCase):
 
     test_rust_tokenizer = True
 

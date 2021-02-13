@@ -5,7 +5,7 @@ from tests.inputs import TestData
 from tests.utils import assertDeepAlmostEqual
 
 
-class ReferencedMetricTest(object):
+class TestReferencedMetric(object):
 
     def test_metric(self):
         """Tests for identical predictions and references

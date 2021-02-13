@@ -2,7 +2,7 @@ import unittest
 import gem_metrics
 from tests.test_referenced import ReferencedMetricTest
 
-class MeteorTest(ReferencedMetricTest, unittest.TestCase):
+class TestMeteor(ReferencedMetricTest, unittest.TestCase):
 
     def setUp(self):
         super().setUp()

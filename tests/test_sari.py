@@ -6,7 +6,7 @@ from tests.test_sourced_and_referenced import SourcedAndReferencedMetricTest
 
 
 
-class SariTest(SourcedAndReferencedMetricTest, unittest.TestCase):
+class TestSari(SourcedAndReferencedMetricTest, unittest.TestCase):
 
     def setUp(self):
         super().setUp()

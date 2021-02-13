@@ -2,7 +2,7 @@ import unittest
 import gem_metrics
 from tests.test_referenced import ReferencedMetricTest
 
-class LocalRecallTest(ReferencedMetricTest, unittest.TestCase):
+class TestLocalRecall(ReferencedMetricTest, unittest.TestCase):
 
     def setUp(self):
         super().setUp()
