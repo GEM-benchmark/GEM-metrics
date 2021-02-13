@@ -22,6 +22,7 @@ class Texts:
                 data = json.load(fh)
         else:
             self.filename = data.get('filename')
+        logger.info(f'Loading {self.__class__.__name__.lower()} for {str(self.filename)}')
         self.all_data = data['values']
 
         if len(data['language']) > 3 or data['language'][0].isupper():
