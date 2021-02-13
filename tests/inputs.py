@@ -1,9 +1,13 @@
 # collection of inputs for testing various metrics
-from gem_metrics.texts import Predictions, References
+from gem_metrics.texts import Predictions, References, Sources
 
 
 class TestData:
 
+    sources =  Sources({"values": ["Alimentum is a non family-friendly restaurant near Burger King in the city centre.",
+                                          "Alimentum is located in the city centre. It is not family-friendly.",
+                                          "Or Orleans has a home."
+                                          ], "language": "en"})
     references = References({"values": [
         {
             "target": ["Alimentum is not family-friendly, and is near the Burger King in the city centre."]
