@@ -1,6 +1,9 @@
 import unittest
+import sys
 import gem_metrics
 from tests.test_referenced import TestReferencedMetric
+
+sys.argv = sys.argv[:1]  # ignore unittest flags
 
 class TestBluert(TestReferencedMetric, unittest.TestCase):
 
