@@ -25,7 +25,7 @@ Code Organization
 Adding tests for a new metric
 -------------
 
-- To add tests for a new metric, create an instance of the right class (i.e., class corresponding to the metric type) and then _fill in_ the expected (true) results for the test cases in `setUp()`.
+- To add tests for a new metric, create an instance of the right class (i.e., class corresponding to the metric type) and then add the expected (true) results for a few predefined test cases in `setUp()` (like filling in a checklist).
 - Example from [test_meteor.py](test_meteor.py):
 ```py
     def setUp(self):
@@ -48,7 +48,7 @@ Adding tests for a new metric
 
 
 
-- You can override any of the functions in the base test classes (`TestReferenceLessMetric`) and add new, metric specific cases.
+- You can override any of the functions in the base test classes (`TestReferenceLessMetric`) and add any number of new, metric-specific cases.
 - `TestReferenceLessMetric` currently contains no standardized test cases, but we still recommend using it for consistency.
 
 Todo
