@@ -83,7 +83,7 @@ class LocalRecall(ReferencedMetric):
         """
         overlaps, ref_numbers = zip(*outcomes)
         ref_numbers = LocalRecall.replace(ref_numbers, None, 0)
-        score = sum(overlaps) / sum(ref_numbers)
+        score = (sum(overlaps) / sum(ref_numbers)) if sum(ref_numbers) > 0 else 0
         return score
 
     @staticmethod
