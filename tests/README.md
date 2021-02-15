@@ -25,7 +25,7 @@ Code Organization
 Adding tests for a new metric
 -------------
 
-- To add tests for a new metric, create an instance of the right class (i.e., class corresponding to the metric type) and then _fill in_ the expected results for the basic test cases in `setUp()`.
+- To add tests for a new metric, create an instance of the right class (i.e., class corresponding to the metric type) and then _fill in_ the expected (true) results for the test cases in `setUp()`.
 - Example from [test_meteor.py](test_meteor.py):
 ```py
     def setUp(self):
@@ -41,10 +41,10 @@ Adding tests for a new metric
 
 | Test case   | Description |
 | ------------- | ------------- |
-| true_results_basic  | Basic no-surprises case.  |
-| true_results_identical_pred_ref | Identical predictions and references.  |
-| true_results_mismatched_pred_ref  | Completely mismatched predictions and references. |
-| true_results_empty_pred | Empty predictions. |
+| basic  | Basic no-surprises case.  |
+| identical_pred_ref | Identical predictions and references.  |
+| mismatched_pred_ref  | Completely mismatched predictions and references. |
+| empty_pred | Empty predictions. |
 
 
 
