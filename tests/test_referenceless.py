@@ -3,7 +3,7 @@
 import unittest
 
 
-class TestReferenceLess(object):
+class TestReferenceLessMetric(object):
     pass
 
 if __name__ == '__main__':

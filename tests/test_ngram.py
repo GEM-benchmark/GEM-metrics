@@ -1,14 +1,14 @@
 import unittest
 from gem_metrics.ngrams import NGramStats
 from gem_metrics.texts import Predictions
-from tests.test_referenceless import TestReferenceLess
+from tests.test_referenceless import TestReferenceLessMetric
 from tests.inputs import TestData
 
 
 # TODO: add multilingual tests
 
 
-class TestNGram(TestReferenceLess, unittest.TestCase):
+class TestNGram(TestReferenceLessMetric, unittest.TestCase):
 
     test_rust_tokenizer = True
 
