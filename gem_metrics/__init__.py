@@ -87,6 +87,7 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
 
     # compute referenceless metrics
     for metric_class in metrics_dict['referenceless_metrics']:
+        logger.info(f'Computing {metric_class.__name__}...')
         metric = metric_class()
         values.update(metric.compute(outs))
 
@@ -96,6 +97,7 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
             raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. references: {len(refs)}')
         values['references_file'] = refs.filename
         for metric_class in metrics_dict['referenced_metrics']:
+            logger.info(f'Computing {metric_class.__name__}...')
             metric = metric_class()
             values.update(metric.compute(outs, refs))
 
@@ -105,6 +107,7 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
             raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. sources: {len(srcs)}')
         values['references_file'] = refs.filename
         for metric_class in metrics_dict['sourced_and_referenced_metrics']:
+            logger.info(f'Computing {metric_class.__name__}...')
             metric = metric_class()
             values.update(metric.compute(outs, refs, srcs))
     return values
