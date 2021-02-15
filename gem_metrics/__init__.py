@@ -23,7 +23,8 @@ from .safeval import SAFEval
 def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
     '''
     Function that converts a list of strings corresponding to the metric names into a dictionary with three keys,
-    referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics, which are populated by the actual metrics class.
+    referenced_metrics, sourced_metrics, referenceless_metrics, and sourced_and_referenced_metrics, which are
+    populated by the actual metrics class.
     '''
     # convert to set in case there are repeats
     metric_list = list(set(metric_list))
@@ -54,27 +55,27 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'safeval': 'sourced',
     }
 
-    referenced_list, referenceless_list, sourced_and_referenced_list, sourced_list = [], [], [], []
+    referenced_list, sourced_list, referenceless_list, sourced_and_referenced_list = [], [], [], []
 
     for metric_name in metric_list:
         metric_class = metric_name_to_metric_class[metric_name]
         metric_type = metric_name_to_metric_type[metric_name]
         if metric_type == 'referenced':
             referenced_list.append(metric_class)
+        elif metric_type == 'sourced':
+            sourced_list.append(metric_class)
         elif metric_type == 'referenceless':
             referenceless_list.append(metric_class)
         elif metric_type == 'sourced_and_referenced':
             sourced_and_referenced_list.append(metric_class)
-        elif metric_type == 'sourced':
-            sourced_list.append(metric_class)
         else:
             raise NotImplementedError(f'{metric_type} is not one of [referenced, referenceless, sourced_and_referenced]. Please check the metric_name_to_metric_type dict.')
 
     metric_dict = {
         'referenced_metrics': referenced_list,
+        'sourced_metrics': sourced_list,
         'referenceless_metrics': referenceless_list,
         'sourced_and_referenced_metrics': sourced_and_referenced_list,
-        'sourced_metrics': sourced_list,
     }
 
     return metric_dict
@@ -84,7 +85,8 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
     """Main metrics computation routine for a single dataset.
     Expects a Predictions and a References object, holding system outputs and corresponding
     references (References may be None -- only referenceless metrics are computed in such a case).
-    metrics_dict is a dictionary with three keys: referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics. Each of those keys' values are a List of the specific metrics.
+    metrics_dict is a dictionary with three keys: referenced_metrics, sourced_metrics, referenceless_metrics,
+    and sourced_and_referenced_metrics. Each of those keys' values are a List of the specific metrics.
     Returns a dict with the results.
     """
     # initialize values storage
@@ -105,15 +107,6 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
             metric = metric_class()
             values.update(metric.compute(outs, refs))
 
-    # compute ref-src-based metrics
-    if refs is not None and srcs is not None:
-        if len(srcs) != len(outs):
-            raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. sources: {len(srcs)}')
-        values['references_file'] = refs.filename
-        for metric_class in metrics_dict['sourced_and_referenced_metrics']:
-            metric = metric_class()
-            values.update(metric.compute(outs, refs, srcs))
-
     # compute src-based metrics
     if srcs is not None:
         if len(srcs) != len(outs):
@@ -122,6 +115,15 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
         for metric_class in metrics_dict['sourced_metrics']:
             metric = metric_class()
             values.update(metric.compute(outs, srcs))
+
+    # compute ref-src-based metrics
+    if refs is not None and srcs is not None:
+        if len(srcs) != len(outs):
+            raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. sources: {len(srcs)}')
+        values['references_file'] = refs.filename
+        for metric_class in metrics_dict['sourced_and_referenced_metrics']:
+            metric = metric_class()
+            values.update(metric.compute(outs, refs, srcs))
 
     return values
 
