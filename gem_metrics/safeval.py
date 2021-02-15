@@ -15,12 +15,29 @@ class SAFEval(SourcedMetric):
             QG_top_p=1,
             lambda_penalty=-0.05,
             isCuda=True
+            # lang="en",
+            # task="summarization",
         )
+        self.task = "summarization"
+        self.language = "en"
 
     def compute(self, predictions, sources):
+        if predictions.task != self.task and predictions.language != self.language:
+            # TODO: change metric in case of task change
+            # self.metric = self.metric
+            print("We need to change QA/QG models")
+
         # TODO: For better code comprehension, not batched for now.
         scores = [
             self.metric.compute_all(p, s)
             for p, s in zip(predictions.untokenized, sources.untokenized)
         ]
-        return {'safeval': np.mean(scores)}
+
+        # TODO: Add other sub metrics.
+        return {
+            'safeval': {
+                'precision': 0,
+                'recall': 0,
+                'mean': np.mean(scores)
+            }
+        }

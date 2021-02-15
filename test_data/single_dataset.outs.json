@@ -1,5 +1,6 @@
 {
     "language": "en",
+    "task": "summarization",
     "values": [
         {
             "generated": "Alimentum is a non family-friendly restaurant near Burger King in the city centre."
