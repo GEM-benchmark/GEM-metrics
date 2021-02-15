@@ -1,5 +1,6 @@
 Tests for GEM-metrics [WIP]
 ====
+Tests for metrics that are part of GEM.
 
 Running all the tests
 -------------
@@ -25,7 +26,7 @@ Adding tests for a new metric
 -------------
 
 - To add tests for a new metric, create an instance of the right class (i.e., class corresponding to the metric type) and then _fill in_ the expected results for the basic test cases in `setUp()`.
-- Example from `test_meteor.py`:
+- Example from [test_meteor.py](test_meteor.py):
 ```py
     def setUp(self):
         super().setUp()
@@ -35,6 +36,23 @@ Adding tests for a new metric
         self.true_results_mismatched_pred_ref = {'meteor': 0.}
         self.true_results_empty_pred = {'meteor': 0.}
 ```
-- Please see `tests/inputs.py` for examples of the test data.
+
+- Please see `tests/inputs.py` for examples of the test data. Briefly, the test cases are:
+
+| Test case   | Description |
+| ------------- | ------------- |
+| true_results_basic  | Basic no-surprises case.  |
+| true_results_identical_pred_ref | Identical predictions and references.  |
+| true_results_mismatched_pred_ref  | Completely mismatched predictions and references. |
+| true_results_empty_pred | Empty predictions. |
+
+
+
 - You can override any of the functions in the base test classes (`TestReferenceLessMetric`) and add new, metric specific cases.
 - `TestReferenceLessMetric` currently contains no standardized test cases, but we still recommend using it for consistency.
+
+Todo
+----
+- [ ] Add multilingual tests
+
+
