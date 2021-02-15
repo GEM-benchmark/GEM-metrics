@@ -87,6 +87,7 @@ class Predictions(Texts):
     """Data holder class for system outputs/predictions."""
 
     def __init__(self, data):
+        self.task = data.get('task', 'agnostic')
         super().__init__(key='generated', data=data)
 
 
