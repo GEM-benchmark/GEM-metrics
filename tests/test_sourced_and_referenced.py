@@ -18,9 +18,6 @@ class TestSourcedAndReferencedMetric(object):
         self.test_precision = 2
 
     def test_metric(self):
-        """Tests for identical predictions and references
-        """
-
         calculated_metrics = self.get_calculated_metrics(
             sources=TestData.sources, references=TestData.references, predictions=TestData.predictions)
         assertDeepAlmostEqual(self, calculated_metrics, self.true_results_basic, places=self.test_precision)

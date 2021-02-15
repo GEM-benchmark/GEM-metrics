@@ -1,4 +1,4 @@
-"""Test class for referenced tests
+"""Test class for referenced metrics.
 """
 from gem_metrics.texts import Predictions, References
 import unittest
@@ -18,9 +18,6 @@ class TestReferencedMetric(object):
         self.test_precision = 2
 
     def test_metric(self):
-        """Tests for identical predictions and references
-        """
-
         calculated_metrics = self.get_calculated_metrics(
             references=TestData.references, predictions=TestData.predictions)
         assertDeepAlmostEqual(self, calculated_metrics,
