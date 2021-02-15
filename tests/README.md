@@ -9,7 +9,12 @@ From the base directory:
 ```sh
 python -m unittest -v
 ```
+Note: this also runs the tests for the heavy metrics.
 
+Alternatively, you can run test for any specific metric directly. For example, to test BLEU:
+```sh
+python tests/test_bleu.py
+```
 
 Code Organization
 -------------
