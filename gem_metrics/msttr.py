@@ -9,19 +9,22 @@ from .metric import ReferencelessMetric
 
 class MSTTR(ReferencelessMetric):
     """Mean segmental type-token ratio (based on tokenized data). Segment length is
-    pre-set to 100, computation is done on lowercased data. Returns two variants -- with
+    pre-set to 100 by default, computation is done on lowercased data. Returns two variants -- with
     and without taking punctuation into account.
 
     This is based on Emiel van Miltenburg's scripts from:
     https://github.com/evanmiltenburg/NLG-diversity/blob/main/diversity.py
     """
-    def __init__(self):
+    def __init__(self, window_size=100):
+        # use MSTTR-100 by default.
         self.rnd = random.Random(1234)
+        self.window_size = window_size
+
 
     def compute(self, predictions):
-        # use MSTTR-100
-        return {'msttr-100': self._MSTTR(predictions.list_tokenized_lower, 100)['msttr_value'],
-                'msttr-100_nopunct': self._MSTTR(predictions.list_tokenized_lower_nopunct, 100)['msttr_value']}
+
+        return {f'msttr-{self.window_size}': self._MSTTR(predictions.list_tokenized_lower, self.window_size)['msttr_value'],
+                f'msttr-{self.window_size}_nopunct': self._MSTTR(predictions.list_tokenized_lower_nopunct, self.window_size)['msttr_value']}
 
     def _TTR(self, list_of_words):
         "Compute type-token ratio."
