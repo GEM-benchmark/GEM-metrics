@@ -1,0 +1,18 @@
+{
+  "values": [
+    {
+      "target": [
+        "Alimentum is not family-friendly, and is near the Burger King in the city centre."
+      ]
+    },
+    {
+      "target": [
+        "There is a place in the city centre, Alimentum, that is not family-friendly."
+      ]
+    },
+    {
+      "target": ["There is a house in New Orleans."]
+    }
+  ],
+  "language": "en"
+}
