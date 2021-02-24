@@ -1,6 +1,6 @@
 import json
 from numpy import long, ndarray
-from gem_metrics.texts import Texts, Predictions, Sources, References
+from gem_metrics.texts import Texts
 
 def assertDeepAlmostEqual(test_case, expected, actual, *args, **kwargs):
     """

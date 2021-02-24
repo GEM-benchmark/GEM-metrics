@@ -1,53 +1,28 @@
 # collection of inputs for testing various metrics
 from gem_metrics.texts import Predictions, References, Sources
+from tests.utils import read_test_data
 
 
 class TestData:
 
-    sources =  Sources({"values": ["Alimentum is a non family-friendly restaurant near Burger King in the city centre.",
-                                          "Alimentum is located in the city centre. It is not family-friendly.",
-                                          "Or Orleans has a home."
-                                          ], "language": "en"})
-    references = References({"values": [
-        {
-            "target": ["Alimentum is not family-friendly, and is near the Burger King in the city centre."]
-        },
-        {
-            "target": ["There is a place in the city centre, Alimentum, that is not family-friendly."]
-        },
-        {
-            "target": ["There is a house in New Orleans."]
-        }
-    ], "language": "en"})
+    sources = read_test_data("test_data/unit_tests/sources.json", Sources)
+    references = read_test_data(
+        "test_data/unit_tests/references.json", References)
 
-    empty_references = References({"values": [
-        "",
-        "",
-        ""
-    ], "language": "en"})
+    empty_references = read_test_data(
+        "test_data/unit_tests/empty_references.json", References)
 
-    predictions = Predictions({"values": ["Alimentum is a non family-friendly restaurant near Burger King in the city centre.",
-                                          "Alimentum is located in the city centre. It is not family-friendly.",
-                                          "Or Orleans has a home."
-                                          ], "language": "en"})
+    predictions = read_test_data(
+        "test_data/unit_tests/predictions.json", Predictions)
 
     # predictions same as the references
-    identical_predictions = Predictions({"values": [
-        "Alimentum is not family-friendly, and is near the Burger King in the city centre.",
-        "There is a place in the city centre, Alimentum, that is not family-friendly.",
-        "There is a house in New Orleans."
-    ], "language": "en"})
+    identical_predictions = read_test_data(
+        "test_data/unit_tests/identical_predictions.json", Predictions)
 
     # empty predictions
-    empty_predictions = Predictions({"values": [
-        "",
-        "",
-        ""
-    ], "language": "en"})
+    empty_predictions = read_test_data(
+        "test_data/unit_tests/empty_predictions.json", Predictions)
 
     # predictions set to references reversed and punctuation removed.
-    reversed_predictions = Predictions({"values": [
-        "ertnec ytic eht ni gniK regruB eht raen si dna yldneirf ylimaf ton si mutnemilA",
-        "yldneirf ylimaf ton si taht mutnemilA ertnec ytic eht ni ecalp si erehT",
-        "snaelrO weN ni esuoh si erehT"
-    ], "language": "en"})
+    reversed_predictions = read_test_data(
+        "test_data/unit_tests/reversed_predictions.json", Predictions)
