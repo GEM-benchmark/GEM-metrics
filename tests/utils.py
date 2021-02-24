@@ -1,4 +1,6 @@
+import json
 from numpy import long, ndarray
+from gem_metrics.texts import Texts, Predictions, Sources, References
 
 def assertDeepAlmostEqual(test_case, expected, actual, *args, **kwargs):
     """
@@ -36,5 +38,18 @@ def assertDeepAlmostEqual(test_case, expected, actual, *args, **kwargs):
         exc.__dict__.setdefault('traces', []).append(trace)
         if is_root:
             trace = ' -> '.join(reversed(exc.traces))
-            exc = AssertionError("%s\nTRACE: %s" % (exc.message, trace))
+            exc = AssertionError(f"%{exc.args}\nTRACE: {trace}")
         raise exc
+
+def read_test_data(pth: str, data_type: Texts) -> Texts:
+    """Given path to a test dataset file, returns an object of type Texts.
+
+    Args:
+        pth (str): [Path to the dataset]
+        data_type (Texts): Predictions, References, or Sources
+
+    Returns:
+        Texts: An object of type either Predictions, References, or Sources 
+    """
+    with open(pth, "r") as fin:
+        return data_type(json.load(fin))
