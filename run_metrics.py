@@ -23,7 +23,7 @@ def main(config):
     if config.use_heavy_metrics:
         config.metric_list.append('bertscore')
         config.metric_list.append('bleurt')
-        config.metric_list.append('safeval')
+        config.metric_list.append('questeval')
 
     metric_dict = gem_metrics.metric_list_to_metric_dict(config.metric_list)
 
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore, BLEURT and SAFEval)')
     ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'msttr', 'ngram', 'sari', 'local_recall'],
                     help=('Full metric list default is [bleu, meteor, rouge, msttr, ngram, sari, local_recall]. '
-                          + 'You can add bertscore, bleurt and safeval by manually adding them in the command '
+                          + 'You can add bertscore, bleurt and questeval by manually adding them in the command '
                           + 'line argument here, or by using the --heavy-metrics flag'))
     args = ap.parse_args()
 

@@ -17,7 +17,7 @@ from .msttr import MSTTR
 from .ngrams import NGramStats
 from .data import ensure_download
 from .sari import SARI
-from .safeval import SAFEval
+from .questeval import QuestEval
 
 
 def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
@@ -39,7 +39,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': MSTTR,
         'ngram': NGramStats,
         'sari': SARI,
-        'safeval': SAFEval,
+        'questeval': QuestEval,
     }
 
     metric_name_to_metric_type = {
@@ -52,7 +52,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': 'referenceless',
         'ngram': 'referenceless',
         'sari': 'sourced_and_referenced',
-        'safeval': 'sourced',
+        'questeval': 'sourced',
     }
 
     referenced_list, sourced_list, referenceless_list, sourced_and_referenced_list = [], [], [], []
