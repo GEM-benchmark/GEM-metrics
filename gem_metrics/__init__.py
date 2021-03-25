@@ -5,6 +5,7 @@ from dataclasses import dataclass
 from argparse import ArgumentParser
 from typing import Optional, Dict, List
 import json
+import sys
 
 # Data holder classes
 from .texts import Predictions, References, Sources, Submission
@@ -224,7 +225,7 @@ def process_files(config):
         config.metric_list.append('bertscore')
         config.metric_list.append('bleurt')
 
-    metric_dict = gem_metrics.metric_list_to_metric_dict(config.metric_list)
+    metric_dict = metric_list_to_metric_dict(config.metric_list)
 
     # load system predictions
     with open(config.predictions_file, encoding='UTF-8') as fh:
@@ -232,41 +233,41 @@ def process_files(config):
 
     # multi-file submissions
     if isinstance(data, dict) and 'submission_name' in data:
-        data = gem_metrics.Submission(data)
+        data = Submission(data)
 
         ref_data = None
         if config.references_file:
             with open(args.references_file, encoding='UTF-8') as fh:
                 ref_data = json.load(fh)
                 for dataset in ref_data.keys():
-                    ref_data[dataset] = gem_metrics.References(ref_data[dataset])
+                    ref_data[dataset] = References(ref_data[dataset])
 
         src_data = None
         if config.sources_file:
             with open(args.references_file, encoding='UTF-8') as fh:
                 src_data = json.load(fh)
                 for dataset in src_data.keys():
-                    src_data[dataset] = gem_metrics.Sources(src_data[dataset])
+                    src_data[dataset] = Sources(src_data[dataset])
 
-        values = gem_metrics.process_submission(data, ref_data, src_data, metric_dict)
+        values = process_submission(data, ref_data, src_data, metric_dict)
 
     # single-file mode
     else:
-        outs = gem_metrics.Predictions(data)
+        outs = Predictions(data)
         srcs = None
         refs = None
 
         # load references, if available
         if config.references_file is not None:
-            refs = gem_metrics.References(args.references_file)
+            refs = References(args.references_file)
             assert(len(refs) == len(outs))
 
         # load sources, if available
         if config.sources_file is not None:
-            srcs = gem_metrics.Sources(args.sources_file)
+            srcs = Sources(args.sources_file)
             assert(len(srcs) == len(outs))
 
-        values = gem_metrics.compute(outs, refs, srcs, metric_dict)
+        values = compute(outs, refs, srcs, metric_dict)
 
     # print output
     out_fh = sys.stdout
@@ -298,4 +299,4 @@ def main():
         metric_list=args.metric_list,
     )
 
-    main(config)
+    process_files(config)
