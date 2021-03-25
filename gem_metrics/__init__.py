@@ -16,6 +16,7 @@ from .bertscore import BERTScore
 from .bleu import BLEU
 from .bleurt import BLEURT
 from .rouge import ROUGE
+from .nist import NIST
 from .local_recall import LocalRecall
 from .msttr import MSTTR
 from .ngrams import NGramStats
@@ -37,6 +38,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'bleurt': BLEURT,
         'local_recall': LocalRecall,
         'meteor': Meteor,
+        'nist': NIST,
         'rouge': ROUGE,
         'msttr': MSTTR,
         'ngram': NGramStats,
@@ -49,6 +51,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'bleurt': 'referenced',
         'local_recall': 'referenced',
         'meteor': 'referenced',
+        'nist': 'referenced',
         'rouge': 'referenced',
         'msttr': 'referenceless',
         'ngram': 'referenceless',
@@ -283,8 +286,8 @@ def main():
     ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to references JSON file')
     ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='')
     ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore and BLEURT)')
-    ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'msttr', 'ngram', 'sari', 'local_recall'],
-                    help=('Full metric list default is [bleu, meteor, rouge, msttr, ngram, sari, local_recall]. '
+    ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'nist', 'msttr', 'ngram', 'sari', 'local_recall'],
+                    help=('Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, local_recall]. '
                           + 'You can add bertscore and bleurt by manually adding them in the command '
                           + 'line argument here, or by using the --heavy-metrics flag'))
     args = ap.parse_args()

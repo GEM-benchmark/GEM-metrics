@@ -283,6 +283,8 @@ class NISTScore(NGramScore):
             for hit_ngrams in self.hit_ngrams[n]:
                 hit_infos[n] += sum(self.info(ngram) * hits for ngram, hits in hit_ngrams.items())
         total_lens = [sum(self.cand_lens[n]) for n in range(self.max_ngram)]
+        if any([l == 0 for l in total_lens]):  # default to 0 for empty data
+            return 0.0
         nist_sum = sum((hit_info / total_len) for hit_info, total_len in zip(hit_infos, total_lens))
         # length penalty term
         bp = self.nist_length_penalty(sum(self.cand_lens[0]), self.avg_ref_len)
