@@ -30,7 +30,6 @@ def main(config):
     # load system predictions
     with open(config.predictions_file, encoding='UTF-8') as fh:
         data = json.load(fh)
-        data.update({"filename": config.predictions_file})
 
     # multi-file submissions
     if isinstance(data, dict) and 'submission_name' in data:
