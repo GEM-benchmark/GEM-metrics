@@ -6,13 +6,6 @@ class ReferencedMetric:
     def compute(self, predictions, references):
         pass
 
-
-class SourcedMetric:
-    """Base class for all metrics that require source sentences."""
-
-    def compute(self, predictions, sources):
-        pass
-
    
 class SourceAndReferencedMetric:
     """Base class for all metrics that require source and reference sentences."""

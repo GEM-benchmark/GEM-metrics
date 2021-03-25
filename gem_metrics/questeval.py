@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
 import numpy as np
-from .metric import SourcedMetric
+from .metric import SourceAndReferencedMetric
 from questeval.questeval_metric import Questeval
 
 
-class QuestEval(SourcedMetric):
+class QuestEval(SourceAndReferencedMetric):
     def __init__(self):
         # Default values
         self.task = "summarization"
@@ -17,7 +17,8 @@ class QuestEval(SourcedMetric):
             isCuda=True,
         )
 
-    def compute(self, predictions, sources):
+    def compute(self, predictions, references, sources):
+        # Not using references for now, but we will in future.
         if predictions.task != self.task or predictions.language.alpha_2 != self.language:
             self.task = predictions.task
             self.language = predictions.language
@@ -28,7 +29,7 @@ class QuestEval(SourcedMetric):
             )
 
         # TODO: For better code comprehension, not batched for now. (maybe in future)
-        # TODO: Use future cached version
+        # TODO: Use cached version (maybe in future)
         scores = [
             self.metric.compute_all(p, s)["scores"]
             for p, s in zip(predictions.untokenized, sources.untokenized)

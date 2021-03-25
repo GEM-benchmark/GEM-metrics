@@ -58,7 +58,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': 'referenceless',
         'ngram': 'referenceless',
         'sari': 'sourced_and_referenced',
-        'questeval': 'sourced',
+        'questeval': 'sourced_and_referenced',
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list, sourced_list = [], [], [], []
