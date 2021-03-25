@@ -24,7 +24,7 @@ setup(
     license='MIT License',
     install_requires=install_requires,
     dependency_links=dependency_links,
-    packages=find_packages()
+    packages=find_packages(),
     entry_points = {
         'console_scripts': ['gem_metrics=gem_metrics:main']
     }
