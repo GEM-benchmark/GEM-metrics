@@ -82,7 +82,7 @@ if __name__ == '__main__':
     ap.add_argument('-r', '--references-file', '--references', '--refs', type=str, help='Path to references JSON file')
     ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to sources JSON file')
     ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='')
-    ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore, BLEURT and SAFEval)')
+    ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore, BLEURT and QuestEval)')
     ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'msttr', 'ngram', 'sari', 'local_recall'],
                     help=('Full metric list default is [bleu, meteor, rouge, msttr, ngram, sari, local_recall]. '
                           + 'You can add bertscore, bleurt and questeval by manually adding them in the command '
