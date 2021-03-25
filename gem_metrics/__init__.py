@@ -237,14 +237,14 @@ def process_files(config):
 
         ref_data = None
         if config.references_file:
-            with open(args.references_file, encoding='UTF-8') as fh:
+            with open(config.references_file, encoding='UTF-8') as fh:
                 ref_data = json.load(fh)
                 for dataset in ref_data.keys():
                     ref_data[dataset] = References(ref_data[dataset])
 
         src_data = None
         if config.sources_file:
-            with open(args.references_file, encoding='UTF-8') as fh:
+            with open(config.references_file, encoding='UTF-8') as fh:
                 src_data = json.load(fh)
                 for dataset in src_data.keys():
                     src_data[dataset] = Sources(src_data[dataset])
@@ -259,12 +259,12 @@ def process_files(config):
 
         # load references, if available
         if config.references_file is not None:
-            refs = References(args.references_file)
+            refs = References(config.references_file)
             assert(len(refs) == len(outs))
 
         # load sources, if available
         if config.sources_file is not None:
-            srcs = Sources(args.sources_file)
+            srcs = Sources(config.sources_file)
             assert(len(srcs) == len(outs))
 
         values = compute(outs, refs, srcs, metric_dict)
@@ -272,7 +272,7 @@ def process_files(config):
     # print output
     out_fh = sys.stdout
     if config.output_file:
-        out_fh = open(args.output_file, 'w', encoding='UTF-8')
+        out_fh = open(config.output_file, 'w', encoding='UTF-8')
     print(json.dumps(values, ensure_ascii=False, indent=4), file=out_fh)
 
 
