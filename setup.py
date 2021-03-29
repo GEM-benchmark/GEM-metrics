@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import re
 from setuptools import setup
 from setuptools import find_packages
 
@@ -8,7 +9,20 @@ dependency_links = []
 
 for package in [l.strip() for l in open('requirements.txt').readlines()]:
     if package.startswith('git+'):
-        pk_name = package.split('/')[-1][:-4]
+        if "#egg=" not in package:
+            # Intuiting the name by taking last object git url
+            # by taking text without any special char "/@." between "/" and ".git":
+            # example:
+            #   "git+https://github.com/google-research/bleurt.git"
+            # returns "bleurt"
+            pk_name = re.search(r"(?<=/)([^/@.]+)(?=\.git)", package).group(0)
+        else:
+            # Taking the given name after keyword "#egg="
+            # by taking text without any special char "/@." after "#egg=":
+            # example:
+            #   "git+https://github.com/recitalAI/QuestEval.git@gem#egg=questeval"
+            # returns "questeval"
+            pk_name = re.search(r"(?<=#egg=)([^/@.]+)", package).group(0)
         install_requires.append(f'{pk_name} @ {package}')
     else:
         install_requires.append(package)
