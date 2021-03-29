@@ -61,7 +61,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'questeval': 'sourced_and_referenced',
     }
 
-    referenced_list, referenceless_list, sourced_and_referenced_list, sourced_list = [], [], [], []
+    referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
 
     for metric_name in metric_list:
         metric_class = metric_name_to_metric_class[metric_name]
@@ -72,8 +72,6 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
             referenceless_list.append(metric_class)
         elif metric_type == 'sourced_and_referenced':
             sourced_and_referenced_list.append(metric_class)
-        elif metric_type == 'sourced':
-            sourced_list.append(metric_class)
         else:
             raise NotImplementedError(f'{metric_type} is not one of [referenced, referenceless, sourced_and_referenced]. Please check the metric_name_to_metric_type dict.')
 
@@ -81,7 +79,6 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'referenced_metrics': referenced_list,
         'referenceless_metrics': referenceless_list,
         'sourced_and_referenced_metrics': sourced_and_referenced_list,
-        'sourced_metrics': sourced_list,
     }
 
     return metric_dict
@@ -123,16 +120,6 @@ def compute(outs: Predictions, refs: Optional[References] = None, srcs: Optional
             logger.info(f'Computing {metric_class.__name__}...')
             metric = metric_class()
             values.update(metric.compute(outs, refs, srcs))
-
-    # compute src-based metrics
-    if srcs is not None:
-        if len(srcs) != len(outs):
-            raise ValueError(f'Incorrect length for data "{outs.filename}" -- outputs: {len(outs)} vs. sources: {len(srcs)}')
-        values['sources_file'] = srcs.filename
-        for metric_class in metrics_dict['sourced_metrics']:
-            metric = metric_class()
-            values.update(metric.compute(outs, srcs))
-
     return values
 
 
