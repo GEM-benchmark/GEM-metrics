@@ -12,5 +12,12 @@ class NUBIA(ReferencedMetric):
         """Run Nubia"""
         scores = []
         for ref, pred in zip(references.untokenized, predictions.untokenized):
-            scores.append(self.metric.score(ref, pred))
+            if isinstance(ref, list):
+                # For multi-reference data, compute micro-average.
+                mutli_scores = []
+                for _ref in ref:
+                    mutli_scores.append(self.metric.score(_ref, pred))
+                scores.append(np.mean(mutli_scores))
+            else:
+                scores.append(self.metric.score(ref, pred))
         return {"nubia": np.mean(scores)}
