@@ -302,4 +302,6 @@ def main():
         metric_list=args.metric_list,
     )
 
+    # hack to make BLEURT work -- it'll fail for anything in argv except the program name :-(
+    sys.argv = sys.argv[:1]
     process_files(config)
