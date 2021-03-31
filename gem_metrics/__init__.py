@@ -22,6 +22,7 @@ from .msttr import MSTTR
 from .ngrams import NGramStats
 from .data import ensure_download
 from .sari import SARI
+from .nubia import NUBIA
 from .questeval import QuestEval
 
 
@@ -44,6 +45,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': MSTTR,
         'ngram': NGramStats,
         'sari': SARI,
+        'nubia': NUBIA,
         'questeval': QuestEval,
     }
 
@@ -58,6 +60,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': 'referenceless',
         'ngram': 'referenceless',
         'sari': 'sourced_and_referenced',
+        'nubia': 'referenced',
         'questeval': 'sourced_and_referenced',
     }
 
@@ -230,6 +233,7 @@ def process_files(config):
     if config.use_heavy_metrics:
         config.metric_list.append('bertscore')
         config.metric_list.append('bleurt')
+        config.metric_list.append('nubia')
         config.metric_list.append('questeval')
 
     metric_dict = metric_list_to_metric_dict(config.metric_list)
@@ -289,10 +293,10 @@ def main():
     ap.add_argument('-r', '--references-file', '--references', '--refs', type=str, help='Path to references JSON file')
     ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to sources JSON file')
     ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='')
-    ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore, BLEURT and QuestEval)')
+    ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore, BLEURT, NUBIA and QuestEval)')
     ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'nist', 'msttr', 'ngram', 'sari', 'local_recall'],
                     help=('Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, local_recall]. '
-                          + 'You can add bertscore, bleurt and questeval by manually adding them in the command '
+                          + 'You can add bertscore, bleurt, nubia and questeval by manually adding them in the command '
                           + 'line argument here, or by using the --heavy-metrics flag'))
     args = ap.parse_args()
 
@@ -306,4 +310,6 @@ def main():
         metric_list=args.metric_list,
     )
 
+    # hack to make BLEURT work -- it'll fail for anything in argv except the program name :-(
+    sys.argv = sys.argv[:1]
     process_files(config)
