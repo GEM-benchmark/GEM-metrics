@@ -22,6 +22,7 @@ from .msttr import MSTTR
 from .ngrams import NGramStats
 from .data import ensure_download
 from .sari import SARI
+from .nubia import NUBIA
 
 
 def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
@@ -43,6 +44,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': MSTTR,
         'ngram': NGramStats,
         'sari': SARI,
+        'nubia': NUBIA
     }
 
     metric_name_to_metric_type = {
@@ -56,6 +58,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': 'referenceless',
         'ngram': 'referenceless',
         'sari': 'sourced_and_referenced',
+        'nubia': 'referenced'
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
@@ -227,6 +230,7 @@ def process_files(config):
     if config.use_heavy_metrics:
         config.metric_list.append('bertscore')
         config.metric_list.append('bleurt')
+        config.metric_list.append('nubia')
 
     metric_dict = metric_list_to_metric_dict(config.metric_list)
 
