@@ -11,7 +11,7 @@ class SourceAndReferencedMetric:
     """Base class for all metrics that require source and reference sentences."""
 
     def compute(self, predictions, references, sources):
-    	pass
+        pass
 
 
 class ReferencelessMetric:

@@ -23,6 +23,7 @@ from .ngrams import NGramStats
 from .data import ensure_download
 from .sari import SARI
 from .nubia import NUBIA
+from .questeval import QuestEval
 
 
 def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
@@ -44,7 +45,8 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': MSTTR,
         'ngram': NGramStats,
         'sari': SARI,
-        'nubia': NUBIA
+        'nubia': NUBIA,
+        'questeval': QuestEval,
     }
 
     metric_name_to_metric_type = {
@@ -58,7 +60,8 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'msttr': 'referenceless',
         'ngram': 'referenceless',
         'sari': 'sourced_and_referenced',
-        'nubia': 'referenced'
+        'nubia': 'referenced',
+        'questeval': 'sourced_and_referenced',
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
@@ -231,6 +234,7 @@ def process_files(config):
         config.metric_list.append('bertscore')
         config.metric_list.append('bleurt')
         config.metric_list.append('nubia')
+        config.metric_list.append('questeval')
 
     metric_dict = metric_list_to_metric_dict(config.metric_list)
 
@@ -287,12 +291,12 @@ def main():
     ap = ArgumentParser(description='GEM automatic metrics script')
     ap.add_argument('predictions_file', type=str, help='Path to system outputs JSON file')
     ap.add_argument('-r', '--references-file', '--references', '--refs', type=str, help='Path to references JSON file')
-    ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to references JSON file')
+    ap.add_argument('-s', '--sources-file', '--sources', '--srcs', type=str, help='Path to sources JSON file')
     ap.add_argument('-o', '--output-file', type=str, help='Path to output file', default='')
-    ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore and BLEURT)')
+    ap.add_argument('--heavy-metrics', action='store_true', help='Run heavyweight metrics (BERTScore, BLEURT, NUBIA and QuestEval)')
     ap.add_argument('--metric-list', nargs='+', default=['bleu', 'meteor', 'rouge', 'nist', 'msttr', 'ngram', 'sari', 'local_recall'],
                     help=('Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, local_recall]. '
-                          + 'You can add bertscore and bleurt by manually adding them in the command '
+                          + 'You can add bertscore, bleurt, nubia and questeval by manually adding them in the command '
                           + 'line argument here, or by using the --heavy-metrics flag'))
     args = ap.parse_args()
 

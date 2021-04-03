@@ -88,6 +88,8 @@ class Predictions(Texts):
     """Data holder class for system outputs/predictions."""
 
     def __init__(self, data):
+        # Task is used in QuestEval metric to select correct model.
+        self.task = data.get('task', 'agnostic')
         super().__init__(key='generated', data=data)
 
 

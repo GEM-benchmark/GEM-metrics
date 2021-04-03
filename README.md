@@ -35,7 +35,7 @@ See [`test_data`](test_data/) for example JSON file formats.
 
 Use `./run_metrics.py -h` to see all available options.
 
-By default, the “heavy” metrics (BERTScore, BLEURT and NUBIA) aren't computed. Use `--heavy-metrics` to compute them.
+By default, the “heavy” metrics (BERTScore, BLEURT, NUBIA and QuestEval) aren't computed. Use `--heavy-metrics` to compute them.
 
 
 License
