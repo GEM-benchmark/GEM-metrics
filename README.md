@@ -10,7 +10,7 @@ GEM-metrics require recent Python 3, virtualenv or similar is recommended. To in
 ```
 git clone https://github.com/GEM-benchmark/GEM-metrics
 cd GEM-metrics
-pip install -r requirements.txt
+pip install -r requirements.txt -r requirements-heavy.txt
 ```
 
 If you want to just run the metrics from console (and don't need access to the checkout), you can just run:
