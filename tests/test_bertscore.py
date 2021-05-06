@@ -1,5 +1,5 @@
 import unittest
-import gem_metrics
+import gem_metrics.bertscore
 from tests.test_referenced import TestReferencedMetric
 
 class TestBertScore(TestReferencedMetric, unittest.TestCase):

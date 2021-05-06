@@ -1,6 +1,6 @@
 from tests.test_sourced_and_referenced import TestSourcedAndReferencedMetric
 import unittest
-import gem_metrics
+import gem_metrics.sari
 from tests.test_sourced_and_referenced import TestSourcedAndReferencedMetric
 
 
