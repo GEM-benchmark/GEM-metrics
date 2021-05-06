@@ -22,7 +22,7 @@ class PyMeteorWrapper:
         # meteor uses a wrong language abbreviation for Czech
         meteor_language = 'cz' if self.language == 'cs' else self.language
         self.meteor_path = self.check_meteor()
-        self.meteor_cmd = ['java', '-jar', '-Xmx2G', METEOR_JAR,
+        self.meteor_cmd = ['java', '-jar', '-Xmx2G', '-Duser.language=en', '-Duser.country=US', METEOR_JAR,
                            '-', '-', '-stdio', '-l', meteor_language, '-norm']
         self.meteor_p = subprocess.Popen(self.meteor_cmd,
                                          cwd=os.path.dirname(self.meteor_path),

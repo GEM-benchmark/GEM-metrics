@@ -16,13 +16,13 @@ class BERTScore(ReferencedMetric):
         return [float(score) for score in score_entry.numpy()]
 
     def compute(self, predictions, references):
-        """If it can run, return BLEURT, otherwise skip."""
-        # Load language-appropriate scorer.
+        """Run BERTScore."""
         self.metric.add_batch(
                 predictions=predictions.untokenized,
                 references=references.untokenized)
-        score = self.metric.compute(lang=predictions.language.alpha_2)
-        score['precision'] = self._make_serializable(score['precision'])
-        score['recall'] = self._make_serializable(score['recall'])
-        score['f1'] = self._make_serializable(score['f1'])
+        # Use language-appropriate scorer.
+        score = self.metric.compute(lang=predictions.language.alpha_2, model_type ='distilbert-base-uncased')
+        score['precision'] = np.mean(self._make_serializable(score['precision']))
+        score['recall'] = np.mean(self._make_serializable(score['recall']))
+        score['f1'] = np.mean(self._make_serializable(score['f1']))
         return {'bertscore': score}

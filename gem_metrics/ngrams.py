@@ -29,13 +29,18 @@ class NGramStats(ReferencelessMetric):
         results = {}
         for data_id, data in [('', predictions.list_tokenized_lower), ('-nopunct', predictions.list_tokenized_lower_nopunct)]:
 
-            results[f'total_length{data_id}'] = sum([len(inst) for inst in data])
-            results[f'mean_pred_length{data_id}'] = np.mean([len(inst) for inst in data])
+            lengths = [len(inst) for inst in data]
+            results[f'total_length{data_id}'] = sum(lengths)
+            results[f'mean_pred_length{data_id}'] = np.mean(lengths)
+            results[f'std_pred_length{data_id}'] = np.std(lengths)
+            results[f'median_pred_length{data_id}'] = np.median(lengths)
+            results[f'min_pred_length{data_id}'] = min(lengths)
+            results[f'max_pred_length{data_id}'] = max(lengths)
 
             last_ngram_freqs = None  # for conditional entropy, we need lower-level n-grams
             for N in [1, 2, 3]:
                 ngram_freqs, uniq_ngrams, ngram_len = self._ngram_stats(data, N)
-                results[f'distinct-{N}{data_id}'] = len(ngram_freqs) / ngram_len
+                results[f'distinct-{N}{data_id}'] = len(ngram_freqs) / ngram_len if ngram_len > 0 else 0
                 results[f'vocab_size-{N}{data_id}'] = len(ngram_freqs)
                 results[f'unique-{N}{data_id}'] = uniq_ngrams
                 results[f'entropy-{N}{data_id}'] = self._entropy(ngram_freqs)
