@@ -23,7 +23,7 @@ from .ngrams import NGramStats
 from .data import ensure_download
 from .sari import SARI
 from .nubia import NUBIA
-from .questeval import QuestEval
+# from .questeval import QuestEval
 
 
 def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
@@ -46,7 +46,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         'ngram': NGramStats,
         'sari': SARI,
         'nubia': NUBIA,
-        'questeval': QuestEval,
+        # 'questeval': QuestEval,
     }
 
     metric_name_to_metric_type = {
@@ -149,40 +149,74 @@ def process_submission(outs: Submission, refs: Optional[Dict], srcs: Optional[Di
 
 
 # URLs to download standard references from
+_SUPPORTED_DATASETS = [
+    'cs_restaurants_val',
+    'cs_restaurants_test',
+    'cs_restaurants_challenge_test_scramble',
+    'web_nlg_ru_val',
+    'web_nlg_ru_test',
+    'web_nlg_ru_challenge_test_scramble',
+    'mlsum_de_val',
+    'mlsum_de_test',
+    'mlsum_de_challenge_test_covid',
+    'mlsum_es_val',
+    'mlsum_es_test',
+    'mlsum_es_challenge_test_covid',
+    'wiki_lingua_spanish_es_val',
+    'wiki_lingua_spanish_es_test',
+    'wiki_lingua_russian_ru_val',
+    'wiki_lingua_russian_ru_test',
+    'wiki_lingua_turkish_tr_val',
+    'wiki_lingua_turkish_tr_test',
+    'wiki_lingua_vietnamese_vi_val',
+    'wiki_lingua_vietnamese_vi_test',
+    'schema_guided_dialog_val',
+    'schema_guided_dialog_test',
+    'schema_guided_dialog_challenge_test_backtranslation',
+    'schema_guided_dialog_challenge_test_bfp02',
+    'schema_guided_dialog_challenge_test_bfp05',
+    'schema_guided_dialog_challenge_test_nopunc',
+    'schema_guided_dialog_challenge_test_scramble',
+    'xsum_val',
+    'xsum_test',
+    'xsum_challenge_test_backtranslation',
+    'xsum_challenge_test_bfp_02',
+    'xsum_challenge_test_bfp_05',
+    'xsum_challenge_test_nopunc',
+    'xsum_challenge_test_covid',
+    'e2e_nlg_val',
+    'e2e_nlg_test',
+    'e2e_nlg_challenge_test_scramble',
+    'web_nlg_en_val',
+    'web_nlg_en_test',
+    'web_nlg_en_challenge_test_scramble',
+    'web_nlg_en_challenge_test_numbers',
+    'common_gen_val',
+    'common_gen_test',
+    'common_gen_challenge_test_scramble',
+    'dart_val',
+    'dart_test',
+    'totto_val',
+    'totto_test',
+    'totto_challenge_test_scramble',
+    'wiki_auto_asset_turk_val',
+    'wiki_auto_asset_turk_test_asset',
+    'wiki_auto_asset_turk_test_turk',
+    'wiki_auto_asset_turk_challenge_test_asset_backtranslation',
+    'wiki_auto_asset_turk_challenge_test_asset_bfp02',
+    'wiki_auto_asset_turk_challenge_test_asset_bfp05',
+    'wiki_auto_asset_turk_challenge_test_asset_nopunc',
+    'wiki_auto_asset_turk_challenge_test_turk_backtranslation',
+    'wiki_auto_asset_turk_challenge_test_turk_bfp02',
+    'wiki_auto_asset_turk_challenge_test_turk_bfp05',
+    'wiki_auto_asset_turk_challenge_test_turk_nopunc'
+]
 _DATASET_REFERENCES_URLS = {
-    'asset_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/asset_test.json',
-    'asset_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/asset_val.json',
-    'common_gen_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/common_gen_val.json',
-    'cs_restaurants_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/cs_restaurants_test.json',
-    'cs_restaurants_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/cs_restaurants_val.json',
-    'dart_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/dart_test.json',
-    'dart_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/dart_val.json',
-    'e2e_nlg_cleaned_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/e2e_nlg_cleaned_test.json',
-    'e2e_nlg_cleaned_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/e2e_nlg_cleaned_val.json',
-    'mlsum_de_val': 'https://github.com/GEM-bdechmark/GEM-metrics/releases/download/data/mlsum_de_val.json',
-    'mlsum_de_test': 'https://github.com/GEM-bdechmark/GEM-metrics/releases/download/data/mlsum_de_test.json',
-    'mlsum_es_val': 'https://github.com/GEM-beschmark/GEM-metrics/releases/download/data/mlsum_es_val.json',
-    'mlsum_es_test': 'https://github.com/GEM-beschmark/GEM-metrics/releases/download/data/mlsum_es_test.json',
-    'schema_guided_dstc8_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/schema_guided_dstc8_test.json',
-    'schema_guided_dstc8_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/schema_guided_dstc8_val.json',
-    'totto_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/totto_val.json',
-    'turk_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_test.json',
-    'turk_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_val.json',
-    'webnlg_en_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/webnlg_en_val.json',
-    'webnlg_en_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/webnlg_en_test.json',
-    'webnlg_ru_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/webnlg_ru_val.json',
-    'webnlg_ru_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/webnlg_ru_test.json',
-    'wiki_lingua_es_en_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/wiki_lingua_es_en_test.json',
-    'wiki_lingua_es_en_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/wiki_lingua_es_en_val.json',
-    'wiki_lingua_ru_en_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/wiki_lingua_ru_en_test.json',
-    'wiki_lingua_ru_en_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/wiki_lingua_ru_en_val.json',
-    'wiki_lingua_tr_en_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/wiki_lingua_tr_en_test.json',
-    'wiki_lingua_tr_en_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/wiki_lingua_tr_en_val.json',
-    'wiki_lingua_vi_en_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/wiki_lingua_vi_en_test.json',
-    'wiki_lingua_vi_en_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/wiki_lingua_vi_en_val.json',
-    'xsum_test': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/xsum_test.json',
-    'xsum_val': 'https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/xsum_val.json',
+    dataset_name: f"https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/{dataset_name}.json" 
+    for dataset_name in _SUPPORTED_DATASETS
 }
+
+
 
 
 def load_references(dataset_name: str) -> Optional[References]:
