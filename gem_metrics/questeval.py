@@ -24,7 +24,10 @@ class QuestEval(SourceAndReferencedMetric):
         # TODO: Use cached version (maybe in future)
         # TODO: only mono reference for now.
         # Not using references for now, but we will in future.
-        if predictions.task != self.task or predictions.language.alpha_2 != self.language:
+        if (
+            predictions.task != self.task
+            or predictions.language.alpha_2 != self.language
+        ):
             self.task = predictions.task
             self.language = predictions.language
 
@@ -34,7 +37,9 @@ class QuestEval(SourceAndReferencedMetric):
             if self.task not in self.metric.AVAILABLE_TASKS:
                 self._this_task_is_available = False
                 task = "text2text"
-                logger.warning("This task is not available, QuestMetric is using the general text2text models.")
+                logger.warning(
+                    "This task is not available, QuestMetric is using the general text2text models."
+                )
 
             self.metric = QuestEvalMetric(
                 task=task,
@@ -43,9 +48,13 @@ class QuestEval(SourceAndReferencedMetric):
             )
 
         # If the task is not available, then we give references instead of sources
-        local_sources, local_references = sources.untokenized, [[None]] * len(sources.untokenized)
+        local_sources, local_references = sources.untokenized, [[None]] * len(
+            sources.untokenized
+        )
         if self._this_task_is_available is False:
-            local_sources, local_references = [None] * len(references.untokenized), references.untokenized
+            local_sources, local_references = [None] * len(
+                references.untokenized
+            ), references.untokenized
 
         # Computing scores
         scores = [
@@ -54,9 +63,9 @@ class QuestEval(SourceAndReferencedMetric):
         ]
 
         return {
-            'questeval': {
-                'precision': np.mean([s["precision"] for s in scores]),
-                'recall': np.mean([s["recall"] for s in scores]),
-                'f1': np.mean([s["fscore"] for s in scores]),
+            "questeval": {
+                "precision": np.mean([s["precision"] for s in scores]),
+                "recall": np.mean([s["recall"] for s in scores]),
+                "f1": np.mean([s["fscore"] for s in scores]),
             }
         }

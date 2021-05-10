@@ -11,8 +11,10 @@ import urllib
 import tarfile
 
 
-_BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), '..', 'data'))
-_NLTK_DATA_PATH = os.path.join(_BASE_DIR, 'nltk_data')
+_BASE_DIR = os.path.abspath(
+    os.path.join(os.path.dirname(os.path.realpath(__file__)), "..", "data")
+)
+_NLTK_DATA_PATH = os.path.join(_BASE_DIR, "nltk_data")
 
 os.makedirs(_NLTK_DATA_PATH, exist_ok=True)
 nltk.data.path.insert(0, _NLTK_DATA_PATH)
@@ -23,7 +25,7 @@ def nltk_ensure_download(package):
     try:
         nltk.data.find(package)
     except LookupError:
-        package_id = re.sub('^[^/]*/', '', package)
+        package_id = re.sub("^[^/]*/", "", package)
         nltk.download(package_id, download_dir=_NLTK_DATA_PATH)
 
 
@@ -34,8 +36,10 @@ def _urlretrieve_reporthook(count, block_size, total_size, start_time):
     progress_size = int(count * block_size)
     speed = int(progress_size / (1024 * duration))
     percent = int(count * block_size * 100 / total_size)
-    sys.stderr.write("\r...%d%%, %d MB, %d KB/s, %d seconds passed" %
-                     (percent, progress_size / (1024 * 1024), speed, duration))
+    sys.stderr.write(
+        "\r...%d%%, %d MB, %d KB/s, %d seconds passed"
+        % (percent, progress_size / (1024 * 1024), speed, duration)
+    )
     sys.stderr.flush()
 
 
@@ -46,16 +50,24 @@ def ensure_download(subdir, target_file, url):
     target_file = os.path.join(target_dir, target_file)
     if not os.path.isfile(target_file):
         os.makedirs(target_dir, exist_ok=True)
-        logger.warn(f'{target_file} not found -- downloading {url}. This may take a few minutes.')
+        logger.warn(
+            f"{target_file} not found -- downloading {url}. This may take a few minutes."
+        )
         # tar.gz download
-        if url.endswith('.tgz') or url.endswith('.tar.gz'):
-            tmp_fname, _ = urllib.request.urlretrieve(url, reporthook=partial(_urlretrieve_reporthook, start_time=time.time()))
+        if url.endswith(".tgz") or url.endswith(".tar.gz"):
+            tmp_fname, _ = urllib.request.urlretrieve(
+                url, reporthook=partial(_urlretrieve_reporthook, start_time=time.time())
+            )
             sys.stderr.write("\n")
-            logger.warn(f'Extracting from {tmp_fname} to {target_dir}')
-            tmp_tgz = tarfile.open(tmp_fname, 'r:gz')
+            logger.warn(f"Extracting from {tmp_fname} to {target_dir}")
+            tmp_tgz = tarfile.open(tmp_fname, "r:gz")
             tmp_tgz.extractall(target_dir)
         # single file download
         else:
-            urllib.request.urlretrieve(url, target_file, reporthook=partial(_urlretrieve_reporthook, start_time=time.time()))
+            urllib.request.urlretrieve(
+                url,
+                target_file,
+                reporthook=partial(_urlretrieve_reporthook, start_time=time.time()),
+            )
             sys.stderr.write("\n")
     return target_file

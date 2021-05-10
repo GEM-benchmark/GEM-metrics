@@ -13,9 +13,8 @@ class Meteor(ReferencedMetric):
         try:
             m = PyMeteorWrapper(predictions.language.alpha_2)
         except Exception as e:
-            logger.warn(f'Cannot run Meteor -- Skipping: {str(e)}')
-            return {'meteor': None}
+            logger.warn(f"Cannot run Meteor -- Skipping: {str(e)}")
+            return {"meteor": None}
         # ignore individual sentence scores
         meteor, _ = m.compute_score(predictions.untokenized, references.untokenized)
-        return {'meteor': meteor}
-
+        return {"meteor": meteor}

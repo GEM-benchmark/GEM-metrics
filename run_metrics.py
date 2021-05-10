@@ -3,5 +3,5 @@
 import gem_metrics
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     gem_metrics.main()

@@ -64,9 +64,13 @@ class NGramScore:
         @return: a tuple of (pred_sent, ref_sent) where everything is tokenized
         """
         # tokenize if needed
-        pred_sent = pred_sent if isinstance(pred_sent, list) else self.tokenize(pred_sent)
-        ref_sents = [ref_sent if isinstance(ref_sent, list) else self.tokenize(ref_sent)
-                     for ref_sent in ref_sents]
+        pred_sent = (
+            pred_sent if isinstance(pred_sent, list) else self.tokenize(pred_sent)
+        )
+        ref_sents = [
+            ref_sent if isinstance(ref_sent, list) else self.tokenize(ref_sent)
+            for ref_sent in ref_sents
+        ]
         return pred_sent, ref_sents
 
     def get_ngram_counts(self, n, sents):
@@ -90,24 +94,32 @@ class NGramScore:
         """This tries to mimic multi-bleu-detok from Moses, and by extension mteval-v13b.
         Code taken directly from there and attempted rewrite into Python."""
         # language-independent part:
-        sent = re.sub(r'<skipped>', r'', sent)  # strip "skipped" tags
-        sent = re.sub(r'-\n', r'', sent)  # strip end-of-line hyphenation and join lines
-        sent = re.sub(r'\n', r' ', sent)  # join lines
-        sent = re.sub(r'&quot;', r'"', sent)  # convert SGML tag for quote to "
-        sent = re.sub(r'&amp;', r'&', sent)  # convert SGML tag for ampersand to &
-        sent = re.sub(r'&lt;', r'<', sent)  # convert SGML tag for less-than to >
-        sent = re.sub(r'&gt;', r'>', sent)  # convert SGML tag for greater-than to <
+        sent = re.sub(r"<skipped>", r"", sent)  # strip "skipped" tags
+        sent = re.sub(r"-\n", r"", sent)  # strip end-of-line hyphenation and join lines
+        sent = re.sub(r"\n", r" ", sent)  # join lines
+        sent = re.sub(r"&quot;", r'"', sent)  # convert SGML tag for quote to "
+        sent = re.sub(r"&amp;", r"&", sent)  # convert SGML tag for ampersand to &
+        sent = re.sub(r"&lt;", r"<", sent)  # convert SGML tag for less-than to >
+        sent = re.sub(r"&gt;", r">", sent)  # convert SGML tag for greater-than to <
 
         # language-dependent part (assuming Western languages):
         sent = " " + sent + " "  # pad with spaces
-        sent = re.sub(r'([\{-\~\[-\` -\&\(-\+\:-\@\/])', r' \1 ', sent)  # tokenize punctuation
-        sent = re.sub(r'([^0-9])([\.,])', r'\1 \2 ', sent)  # tokenize period and comma unless preceded by a digit
-        sent = re.sub(r'([\.,])([^0-9])', r' \1 \2', sent)  # tokenize period and comma unless followed by a digit
-        sent = re.sub(r'([0-9])(-)', r'\1 \2 ', sent)  # tokenize dash when preceded by a digit
-        sent = re.sub(r'\s+', r' ', sent)  # one space only between words
+        sent = re.sub(
+            r"([\{-\~\[-\` -\&\(-\+\:-\@\/])", r" \1 ", sent
+        )  # tokenize punctuation
+        sent = re.sub(
+            r"([^0-9])([\.,])", r"\1 \2 ", sent
+        )  # tokenize period and comma unless preceded by a digit
+        sent = re.sub(
+            r"([\.,])([^0-9])", r" \1 \2", sent
+        )  # tokenize period and comma unless followed by a digit
+        sent = re.sub(
+            r"([0-9])(-)", r"\1 \2 ", sent
+        )  # tokenize dash when preceded by a digit
+        sent = re.sub(r"\s+", r" ", sent)  # one space only between words
         sent = sent.strip()  # remove padding
 
-        return sent.split(' ')
+        return sent.split(" ")
 
 
 class BLEUScore(NGramScore):
@@ -152,7 +164,10 @@ class BLEUScore(NGramScore):
 
         # take the reference that is closest in length to the candidate
         # (if there are two of the same distance, take the shorter one)
-        closest_ref = min(ref_sents, key=lambda ref_sent: (abs(len(ref_sent) - len(pred_sent)), len(ref_sent)))
+        closest_ref = min(
+            ref_sents,
+            key=lambda ref_sent: (abs(len(ref_sent) - len(pred_sent)), len(ref_sent)),
+        )
         self.ref_len += len(closest_ref)
 
     def score(self):
@@ -180,9 +195,12 @@ class BLEUScore(NGramScore):
         # brevity penalty (smoothed a bit: if candidate length is 0, we change it to 1e-5
         # to avoid division by zero)
         bp = 1.0
-        if (self.cand_lens[0] <= self.ref_len):
-            bp = math.exp(1.0 - self.ref_len /
-                          (float(self.cand_lens[0]) if self.cand_lens[0] else 1e-5))
+        if self.cand_lens[0] <= self.ref_len:
+            bp = math.exp(
+                1.0
+                - self.ref_len
+                / (float(self.cand_lens[0]) if self.cand_lens[0] else 1e-5)
+            )
 
         return bp * self.ngram_precision()
 
@@ -193,8 +211,10 @@ class BLEUScore(NGramScore):
         for n_hits, n_len in zip(self.hits, self.cand_lens):
             n_hits += self.smoothing  # pre-set smoothing
             n_len += self.smoothing
-            n_hits = max(n_hits, self.TINY)  # forced smoothing just a litle to make BLEU defined
-            n_len = max(n_len, self.SMALL)   # only applied for zeros
+            n_hits = max(
+                n_hits, self.TINY
+            )  # forced smoothing just a litle to make BLEU defined
+            n_len = max(n_len, self.SMALL)  # only applied for zeros
             prec_log_sum += math.log(n_hits / n_len)
 
         return math.exp((1.0 / self.max_ngram) * prec_log_sum)
@@ -204,7 +224,7 @@ class NISTScore(NGramScore):
     """An accumulator object capable of computing NIST score using multiple references."""
 
     # NIST beta parameter setting (copied from mteval-13a.pl)
-    BETA = - math.log(0.5) / math.log(1.5) ** 2
+    BETA = -math.log(0.5) / math.log(1.5) ** 2
 
     def __init__(self, max_ngram=5, case_sensitive=False):
         """Create the scoring object.
@@ -216,7 +236,9 @@ class NISTScore(NGramScore):
 
     def reset(self):
         """Reset the object, zero all counters."""
-        self.ref_ngrams = [defaultdict(int) for _ in range(self.max_ngram + 1)]  # has 0-grams
+        self.ref_ngrams = [
+            defaultdict(int) for _ in range(self.max_ngram + 1)
+        ]  # has 0-grams
         # these two don't have 0-grams
         self.hit_ngrams = [[] for _ in range(self.max_ngram)]
         self.cand_lens = [[] for _ in range(self.max_ngram)]
@@ -259,8 +281,11 @@ class NISTScore(NGramScore):
         """Return the NIST informativeness of an n-gram."""
         if ngram not in self.ref_ngrams[len(ngram)]:
             return 0.0
-        return math.log(self.ref_ngrams[len(ngram) - 1][ngram[:-1]] /
-                        float(self.ref_ngrams[len(ngram)][ngram]), 2)
+        return math.log(
+            self.ref_ngrams[len(ngram) - 1][ngram[:-1]]
+            / float(self.ref_ngrams[len(ngram)][ngram]),
+            2,
+        )
 
     def nist_length_penalty(self, lsys, avg_lref):
         """Compute the NIST length penalty, based on system output length & average reference length.
@@ -281,11 +306,15 @@ class NISTScore(NGramScore):
         hit_infos = [0.0 for _ in range(self.max_ngram)]
         for n in range(self.max_ngram):
             for hit_ngrams in self.hit_ngrams[n]:
-                hit_infos[n] += sum(self.info(ngram) * hits for ngram, hits in hit_ngrams.items())
+                hit_infos[n] += sum(
+                    self.info(ngram) * hits for ngram, hits in hit_ngrams.items()
+                )
         total_lens = [sum(self.cand_lens[n]) for n in range(self.max_ngram)]
         if any([l == 0 for l in total_lens]):  # default to 0 for empty data
             return 0.0
-        nist_sum = sum((hit_info / total_len) for hit_info, total_len in zip(hit_infos, total_lens))
+        nist_sum = sum(
+            (hit_info / total_len) for hit_info, total_len in zip(hit_infos, total_lens)
+        )
         # length penalty term
         bp = self.nist_length_penalty(sum(self.cand_lens[0]), self.avg_ref_len)
         return bp * nist_sum

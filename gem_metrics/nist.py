@@ -12,4 +12,4 @@ class NIST(ReferencedMetric):
         nist = NISTScore()
         for pred, refs in zip(predictions.untokenized, references.untokenized):
             nist.append(pred, refs)
-        return {'nist': nist.score()}
+        return {"nist": nist.score()}
