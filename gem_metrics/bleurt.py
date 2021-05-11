@@ -6,11 +6,11 @@ import numpy as np
 
 
 class BLEURT(ReferencedMetric):
-    """BLEURT uses the tiny checkpoint for efficient CPU runtime."""
+    """BLEURT uses the base checkpoint for efficient runtime."""
 
     def __init__(self, checkpoint_path="bleurt-base-128"):
         """Load the BLEURT checkpoint into memory."""
-        self.metric = load_metric("bleurt", checkpoint_path)
+        self.metric = load_metric("bleurt", checkpoint_path=checkpoint_path)
 
     def compute(self, predictions, references):
         """Compute the BLEURT score. Multi-ref will be averaged."""

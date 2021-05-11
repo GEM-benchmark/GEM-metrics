@@ -8,3 +8,4 @@ nltk_data
 paraphrase-*.gz
 meteor-1.5.jar
 references
+*contrast_sets.json

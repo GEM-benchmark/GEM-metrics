@@ -1,12 +1,16 @@
 #!/usr/bin/env python3
 
-from logzero import logger
-from dataclasses import dataclass
 from argparse import ArgumentParser
-from typing import Optional, Dict, List
+from copy import copy
+from dataclasses import dataclass
 import json
+from multiprocessing import Process, Manager
+from multiprocessing.pool import ThreadPool as Pool
+
+from typing import Optional, Dict, List
 import sys
 import traceback
+from logzero import logger
 
 # Data holder classes
 from .texts import Predictions, References, Sources, Submission
@@ -63,7 +67,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "ngram": "referenceless",
         "sari": "sourced_and_referenced",
         "nubia": "referenced",
-        "questeval": "sourced_and_referenced",
+        # "questeval": "sourced_and_referenced",
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
@@ -103,14 +107,16 @@ def compute(
     metrics_dict is a dictionary with three keys: referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics. Each of those keys' values are a List of the specific metrics.
     Returns a dict with the results.
     """
-    # initialize values storage
+    # initialize values storage.
     values = {"predictions_file": outs.filename, "N": len(outs)}
 
-    # compute referenceless metrics
+    # compute referenceless metrics.
     for metric_class in metrics_dict["referenceless_metrics"]:
-        logger.info(f"Computing {metric_class.__name__}...")
+        logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
         metric = metric_class()
         values.update(metric.compute(outs))
+        # Explicit deletion due to memory leak when multiple models were instantiated.
+        del metric
 
     # compute ref-based metrics
     if refs is not None:
@@ -120,9 +126,10 @@ def compute(
             )
         values["references_file"] = refs.filename
         for metric_class in metrics_dict["referenced_metrics"]:
-            logger.info(f"Computing {metric_class.__name__}...")
+            logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
             metric = metric_class()
             values.update(metric.compute(outs, refs))
+            del metric
 
     # compute ref-src-based metrics
     if refs is not None and srcs is not None:
@@ -135,6 +142,7 @@ def compute(
             logger.info(f"Computing {metric_class.__name__}...")
             metric = metric_class()
             values.update(metric.compute(outs, refs, srcs))
+            del metric
     return values
 
 
@@ -142,7 +150,8 @@ def process_submission(
     outs: Submission,
     refs: Optional[Dict],
     srcs: Optional[Dict],
-    metrics_dict: Dict[str, List],
+    parallel_metric_dict: Dict[str, List],
+    serial_metric_dict: Dict[str, List],
 ) -> Dict:
     """Process a (potentially) multi-dataset submission. Expects a Submission object
     holding all the predictions, and potentially references and/or sources in a dictionary keyed by
@@ -153,82 +162,159 @@ def process_submission(
 
     Returns a dict keyed by dataset names, containing the dicts for each dataset's results.
     """
-    values = {"submission_name": outs.name, "param_count": outs.param_count}
+    # values = {"submission_name": outs.name, "param_count": outs.param_count}
+
+    # # TODO: parallelize by throwing this into a pool and returning the value, then doing the values[dataset] assignment when it gets back?
+    # for dataset in outs.datasets:
+    #   logger.info(f"Computing metrics for {dataset}...")
+    #   outs_ds = outs.predictions_for(dataset)
+    #   refs_ds = refs.get(dataset, None)
+    #   srcs_ds = srcs.get(dataset, None)
+    #   values[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict)
+
+    # Handle the CPU-bound metrics in parallel to speed up computation.
+    manager = Manager()
+    shared_dict = manager.dict()
+    shared_dict["submission_name"] = outs.name
+    shared_dict["param_count"] = outs.param_count
+
+    def multiprocess_compute(dataset, outs_ds, refs_ds, srcs_ds, metrics_dict):
+        shared_dict[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict)
+
+    job_args = []
+
     for dataset in outs.datasets:
         logger.info(f"Computing metrics for {dataset}...")
         outs_ds = outs.predictions_for(dataset)
-        # use default reference files if no custom ones are provided
-        refs_ds = (
-            refs[dataset] if (refs and dataset in refs) else load_references(dataset)
+        refs_ds = refs.get(dataset, None)
+        srcs_ds = srcs.get(dataset, None)
+        job_args.append((dataset, outs_ds, refs_ds, srcs_ds, parallel_metric_dict))
+
+    pool = Pool(processes=len(job_args))
+    pool.starmap(multiprocess_compute, [x for x in job_args])
+    pool.close()
+    pool.join()
+
+    logger.info("Moving on to the serial metrics now.")
+
+    for dataset in outs.datasets:
+        logger.info(f"Computing serial metrics for {dataset}...")
+        outs_ds = outs.predictions_for(dataset)
+        refs_ds = refs.get(dataset, None)
+        srcs_ds = srcs.get(dataset, None)
+        shared_dict[dataset] = shared_dict[dataset] | compute(
+            outs_ds, refs_ds, srcs_ds, serial_metric_dict
         )
-        srcs_ds = srcs[dataset] if (srcs and dataset in srcs) else load_sources(dataset)
-        values[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict=metrics_dict)
-    return values
+
+    return dict(shared_dict)
 
 
 # URLs to download standard references from
-_SUPPORTED_DATASETS = [
-    "cs_restaurants_val",
+_SUPPORTED_DATASETS = {
+    "cs_restaurants_val": "cs",
+    "cs_restaurants_test": "cs",
+    "cs_restaurants_challenge_test_scramble": "cs",
+    "common_gen_val": "cs",
+    # "common_gen_test": "en",
+    # "common_gen_challenge_test_scramble": "en",
+    "dart_val": "en",
+    "dart_test": "en",
+    "e2e_nlg_val": "en",
+    "e2e_nlg_test": "en",
+    "e2e_nlg_challenge_test_scramble": "en",
+    "mlsum_de_val": "de",
+    "mlsum_de_test": "de",
+    "mlsum_de_challenge_test_covid": "de",
+    "mlsum_es_val": "es",
+    "mlsum_es_test": "es",
+    "mlsum_es_challenge_test_covid": "es",
+    "schema_guided_dialog_val": "en",
+    "schema_guided_dialog_test": "en",
+    "schema_guided_dialog_challenge_test_backtranslation": "en",
+    "schema_guided_dialog_challenge_test_bfp02": "en",
+    "schema_guided_dialog_challenge_test_bfp05": "en",
+    "schema_guided_dialog_challenge_test_nopunc": "en",
+    "schema_guided_dialog_challenge_test_scramble": "en",
+    "totto_val": "en",
+    # "totto_test": "en",
+    # "totto_challenge_test_scramble": "en",
+    "web_nlg_en_val": "en",
+    "web_nlg_en_test": "en",
+    "web_nlg_en_challenge_test_scramble": "en",
+    "web_nlg_en_challenge_test_numbers": "en",
+    "web_nlg_ru_val": "ru",
+    "web_nlg_ru_test": "ru",
+    "web_nlg_ru_challenge_test_scramble": "ru",
+    "wiki_auto_asset_turk_val": "en",
+    "wiki_auto_asset_turk_test_asset": "en",
+    "wiki_auto_asset_turk_test_turk": "en",
+    "wiki_auto_asset_turk_challenge_test_asset_backtranslation": "en",
+    "wiki_auto_asset_turk_challenge_test_asset_bfp02": "en",
+    "wiki_auto_asset_turk_challenge_test_asset_bfp05": "en",
+    "wiki_auto_asset_turk_challenge_test_asset_nopunc": "en",
+    "wiki_auto_asset_turk_challenge_test_turk_backtranslation": "en",
+    "wiki_auto_asset_turk_challenge_test_turk_bfp02": "en",
+    "wiki_auto_asset_turk_challenge_test_turk_bfp05": "en",
+    "wiki_auto_asset_turk_challenge_test_turk_nopunc": "en",
+    "wiki_lingua_spanish_es_val": "es",
+    "wiki_lingua_spanish_es_test": "es",
+    "wiki_lingua_russian_ru_val": "ru",
+    "wiki_lingua_russian_ru_test": "ru",
+    "wiki_lingua_turkish_tr_val": "tr",
+    "wiki_lingua_turkish_tr_test": "tr",
+    "wiki_lingua_vietnamese_vi_val": "vi",
+    "wiki_lingua_vietnamese_vi_test": "vi",
+    "xsum_val": "en",
+    "xsum_test": "en",
+    "xsum_challenge_test_backtranslation": "en",
+    "xsum_challenge_test_bfp_02": "en",
+    "xsum_challenge_test_bfp_05": "en",
+    "xsum_challenge_test_nopunc": "en",
+    "xsum_challenge_test_covid": "en",
+}
+
+# URLs to download standard references from
+_CHALLENGE_SET_MATCHES = {
+    "cs_restaurants_challenge_test_scramble": "cs_restaurants_test",
+    "web_nlg_ru_challenge_test_scramble": "web_nlg_ru_test",
+    "schema_guided_dialog_challenge_test_backtranslation": "schema_guided_dialog_test",
+    "schema_guided_dialog_challenge_test_bfp02": "schema_guided_dialog_test",
+    "schema_guided_dialog_challenge_test_bfp05": "schema_guided_dialog_test",
+    "schema_guided_dialog_challenge_test_nopunc": "schema_guided_dialog_test",
+    "schema_guided_dialog_challenge_test_scramble": "schema_guided_dialog_test",
+    "xsum_challenge_test_backtranslation": "xsum_test",
+    "xsum_challenge_test_bfp_02": "xsum_test",
+    "xsum_challenge_test_bfp_05": "xsum_test",
+    "xsum_challenge_test_nopunc": "xsum_test",
+    "e2e_nlg_challenge_test_scramble": "e2e_nlg_test",
+    "web_nlg_en_challenge_test_scramble": "web_nlg_en_test",
+    "web_nlg_en_challenge_test_numbers": "web_nlg_en_test",
+    "wiki_auto_asset_turk_challenge_test_asset_backtranslation": "wiki_auto_asset_turk_test_asset",
+    "wiki_auto_asset_turk_challenge_test_asset_bfp02": "wiki_auto_asset_turk_test_asset",
+    "wiki_auto_asset_turk_challenge_test_asset_bfp05": "wiki_auto_asset_turk_test_asset",
+    "wiki_auto_asset_turk_challenge_test_asset_nopunc": "wiki_auto_asset_turk_test_asset",
+    "wiki_auto_asset_turk_challenge_test_turk_backtranslation": "wiki_auto_asset_turk_test_turk",
+    "wiki_auto_asset_turk_challenge_test_turk_bfp02": "wiki_auto_asset_turk_test_turk",
+    "wiki_auto_asset_turk_challenge_test_turk_bfp05": "wiki_auto_asset_turk_test_turk",
+    "wiki_auto_asset_turk_challenge_test_turk_nopunc": "wiki_auto_asset_turk_test_turk",
+}
+
+_CONTRAST_SET_BASE = [
     "cs_restaurants_test",
-    "cs_restaurants_challenge_test_scramble",
-    "web_nlg_ru_val",
-    "web_nlg_ru_test",
-    "web_nlg_ru_challenge_test_scramble",
-    "mlsum_de_val",
-    "mlsum_de_test",
-    "mlsum_de_challenge_test_covid",
-    "mlsum_es_val",
-    "mlsum_es_test",
-    "mlsum_es_challenge_test_covid",
-    "wiki_lingua_spanish_es_val",
-    "wiki_lingua_spanish_es_test",
-    "wiki_lingua_russian_ru_val",
-    "wiki_lingua_russian_ru_test",
-    "wiki_lingua_turkish_tr_val",
-    "wiki_lingua_turkish_tr_test",
-    "wiki_lingua_vietnamese_vi_val",
-    "wiki_lingua_vietnamese_vi_test",
-    "schema_guided_dialog_val",
-    "schema_guided_dialog_test",
-    "schema_guided_dialog_challenge_test_backtranslation",
-    "schema_guided_dialog_challenge_test_bfp02",
-    "schema_guided_dialog_challenge_test_bfp05",
-    "schema_guided_dialog_challenge_test_nopunc",
-    "schema_guided_dialog_challenge_test_scramble",
-    "xsum_val",
+    "totto_test",
     "xsum_test",
-    "xsum_challenge_test_backtranslation",
-    "xsum_challenge_test_bfp_02",
-    "xsum_challenge_test_bfp_05",
-    "xsum_challenge_test_nopunc",
-    "xsum_challenge_test_covid",
-    "e2e_nlg_val",
-    "e2e_nlg_test",
-    "e2e_nlg_challenge_test_scramble",
-    "web_nlg_en_val",
     "web_nlg_en_test",
-    "web_nlg_en_challenge_test_scramble",
-    "web_nlg_en_challenge_test_numbers",
-    "common_gen_val",
-    # "common_gen_test",
-    # "common_gen_challenge_test_scramble",
-    "dart_val",
-    "dart_test",
-    "totto_val",
-    # "totto_test",
-    # "totto_challenge_test_scramble",
-    "wiki_auto_asset_turk_val",
+    "web_nlg_ru_test",
     "wiki_auto_asset_turk_test_asset",
-    "wiki_auto_asset_turk_test_turk",
-    "wiki_auto_asset_turk_challenge_test_asset_backtranslation",
-    "wiki_auto_asset_turk_challenge_test_asset_bfp02",
-    "wiki_auto_asset_turk_challenge_test_asset_bfp05",
-    "wiki_auto_asset_turk_challenge_test_asset_nopunc",
-    "wiki_auto_asset_turk_challenge_test_turk_backtranslation",
-    "wiki_auto_asset_turk_challenge_test_turk_bfp02",
-    "wiki_auto_asset_turk_challenge_test_turk_bfp05",
-    "wiki_auto_asset_turk_challenge_test_turk_nopunc",
+    # "wiki_auto_asset_turk_test_turk",
 ]
+
+_LANGUAGES = {}
+
+_CONTRAST_SET_MATCHES = {
+    dataset_name: f"https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/{dataset_name}_contrast_sets.json"
+    for dataset_name in _CONTRAST_SET_BASE
+}
 
 _DATASET_REFERENCES_URLS = {
     dataset_name: f"https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/{dataset_name}.json"
@@ -236,7 +322,7 @@ _DATASET_REFERENCES_URLS = {
 }
 # Fix val -> validation in download.
 for key, value in _DATASET_REFERENCES_URLS.items():
-    if key.endswith('val'):
+    if key.endswith("val"):
         _DATASET_REFERENCES_URLS[key] = value.replace("val", "validation")
 
 
@@ -249,9 +335,28 @@ def load_references(dataset_name: str) -> Optional[References]:
                 dataset_name + ".json",
                 _DATASET_REFERENCES_URLS[dataset_name],
             )
-            return References(dataset_file)
+            return References(dataset_file, language=_SUPPORTED_DATASETS[dataset_name])
         except Exception as e:
             logger.warn(f"Could not format references for {dataset_name}: {str(e)}")
+            traceback.print_tb(e.__traceback__)
+            return None
+    return None
+
+
+def load_contrast_set(dataset_name: str) -> Optional[Dict]:
+    if dataset_name in _CONTRAST_SET_MATCHES:
+        try:
+            dataset_file = ensure_download(
+                "contrast_sets",
+                dataset_name + "_contrast_sets.json",
+                _CONTRAST_SET_MATCHES[dataset_name],
+            )
+            with open(dataset_file) as f:
+                contrast_sets = json.load(f)
+            return contrast_sets
+        except Exception as e:
+            logger.warn(f"Could not format contrast set for {dataset_name}: {str(e)}")
+            logger.warn(f"Looked for this file: {_CONTRAST_SET_MATCHES[dataset_name]}.")
             traceback.print_tb(e.__traceback__)
             return None
     return None
@@ -294,13 +399,14 @@ class Config:
 
 def process_files(config):
     """Main entry point -- load inputs, call metrics measuring, print outputs"""
+    parallel_metric_dict = metric_list_to_metric_dict(config.metric_list)
+    parallel_metrics_list = []
     if config.use_heavy_metrics:
-        config.metric_list.append("bertscore")
-        config.metric_list.append("bleurt")
-        config.metric_list.append("nubia")
-        config.metric_list.append("questeval")
-
-    metric_dict = metric_list_to_metric_dict(config.metric_list)
+        parallel_metrics_list.append("bertscore")
+        parallel_metrics_list.append("bleurt")
+        parallel_metrics_list.append("nubia")
+        # parallel_metrics_list.append("questeval")
+    serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
 
     # load system predictions
     with open(config.predictions_file, encoding="UTF-8") as fh:
@@ -308,41 +414,112 @@ def process_files(config):
 
     # multi-file submissions
     if isinstance(data, dict) and "submission_name" in data:
-        data = Submission(data)
+        data = Submission(data, language_table=_SUPPORTED_DATASETS)
 
-        ref_data = None
+        ref_data = {}
         if config.references_file:
             with open(config.references_file, encoding="UTF-8") as fh:
                 ref_data = json.load(fh)
                 for dataset in ref_data.keys():
-                    ref_data[dataset] = References(ref_data[dataset])
+                    ref_data[dataset] = References(
+                        ref_data[dataset], language=_SUPPORTED_DATASETS[dataset]
+                    )
 
-        src_data = None
+        src_data = {}
         if config.sources_file:
             with open(config.references_file, encoding="UTF-8") as fh:
                 src_data = json.load(fh)
                 for dataset in src_data.keys():
-                    src_data[dataset] = Sources(src_data[dataset])
+                    src_data[dataset] = Sources(
+                        src_data[dataset], language=_SUPPORTED_DATASETS[dataset]
+                    )
 
-        values = process_submission(data, ref_data, src_data, metric_dict)
+        # Use default reference files if no custom ones are provided.
+        for dataset in data.datasets:
+            if dataset not in ref_data:
+                ref_data[dataset] = load_references(dataset)
 
-    # single-file mode
+            # Ensure that the reference files are ordered the same way.
+            if ref_data[dataset] is not None:
+                # Only if reference have IDs.
+                if hasattr(ref_data[dataset], "ids"):
+                    outs_ds = data.predictions_for(dataset)
+                    outs_ds.assign_ids_and_unscramble(id_list=ref_data[dataset].ids)
+
+        # For challenge sets, assume that we have a gem_parent_id and construct
+        # the corresponding test subset.
+        for dataset in data.datasets:
+            # Only works if we have references.
+            if ref_data[dataset] is not None:
+                # And if the references have the parent_id set.
+                if ref_data[dataset].has_parent_ids:
+                    if dataset not in _CHALLENGE_SET_MATCHES:
+                        logger.info(
+                            "Found parent ID in %s but no corresponding parent dataset"
+                            % dataset
+                        )
+                        continue
+                    parent_dataset_name = _CHALLENGE_SET_MATCHES[dataset]
+                    new_dataset_name = f"{dataset}_parent"
+                    logger.info("Adding new subset dataset %s" % new_dataset_name)
+                    # Construct new references.
+                    new_refs = copy(ref_data[parent_dataset_name])
+                    new_refs.assign_ids_and_unscramble(ref_data[dataset].parent_ids)
+                    ref_data[new_dataset_name] = new_refs
+                    # Construct new predictions.
+                    new_preds = copy(data.predictions_for(parent_dataset_name))
+                    new_preds.assign_ids_and_unscramble(ref_data[dataset].parent_ids)
+                    data.entries[new_dataset_name] = new_preds
+                    logger.info("Dataset successfully added.")
+
+        # Next construct the contrast sets. The files define a list of IDs we can
+        # match on.
+        for dataset in data.datasets:
+            if dataset in _CONTRAST_SET_MATCHES:
+                # Assemble dictionary of all the subsets.
+                contrast_sets = load_contrast_set(dataset)
+                for set_name, subsets in contrast_sets.items():
+                    for subset_name, id_list in subsets.items():
+                        new_dataset_name = (
+                            f"{dataset}_contrast_{set_name}-{subset_name}"
+                        )
+                        logger.info("Adding new contrast dataset %s" % new_dataset_name)
+                        # Optionally, construct new references.
+                        if ref_data[dataset] is not None:
+                            new_refs = copy(ref_data[dataset])
+                            new_refs.assign_ids_and_unscramble(id_list)
+                            ref_data[new_dataset_name] = new_refs
+                        # Construct new predictions.
+                        new_preds = copy(data.predictions_for(dataset))
+                        new_preds.assign_ids_and_unscramble(id_list)
+                        data.entries[new_dataset_name] = new_preds
+                        logger.info("Dataset successfully added.")
+        # Compute all the values.
+        values = process_submission(
+            data, ref_data, src_data, parallel_metric_dict, serial_metric_dict
+        )
+
+    # Single-file mode
     else:
         outs = Predictions(data)
-        srcs = None
-        refs = None
+        srcs = {}
+        refs = {}
 
         # load references, if available
         if config.references_file is not None:
             refs = References(config.references_file)
             assert len(refs) == len(outs)
 
+            # Ensure that they are not scrambled.
+            outs.assign_ids_and_unscramble(id_list=refs.ids)
+
         # load sources, if available
         if config.sources_file is not None:
             srcs = Sources(config.sources_file)
             assert len(srcs) == len(outs)
-
-        values = compute(outs, refs, srcs, metric_dict)
+        # In single file mode this is automatically all serial.
+        serial_metric_dict.update(parallel_metric_dict)
+        values = compute(outs, refs, srcs, serial_metric_dict)
 
     # print output
     out_fh = sys.stdout
@@ -377,6 +554,7 @@ def main():
     )
     ap.add_argument(
         "--heavy-metrics",
+        "--heavy_metrics",
         action="store_true",
         help="Run heavyweight metrics (BERTScore, BLEURT, NUBIA and QuestEval)",
     )

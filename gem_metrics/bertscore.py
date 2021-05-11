@@ -10,11 +10,11 @@ class BERTScore(ReferencedMetric):
 
     def __init__(self):
         """Load the BERT checkpoint into memory."""
-        self.metric = load_metric("bertscore")
+        self.metric = load_metric("bertscore", batch_size=64)
 
     def _make_serializable(self, score_entry):
         """Convert from tensor object to list of floats."""
-        return [float(score) for score in score_entry.numpy()]
+        return [float(score) for score in score_entry]
 
     def compute(self, predictions, references):
         """Run BERTScore."""
