@@ -101,7 +101,7 @@ def compute(
     refs: Optional[References] = None,
     srcs: Optional[Sources] = None,
     metrics_dict: Dict[str, List] = None,
-    cache: Optional[Cache] = None
+    cache: Optional[Cache] = None,
 ) -> Dict:
     """Main metrics computation routine for a single dataset.
 
@@ -109,11 +109,11 @@ def compute(
       outs: texts.Predictions object.
       refs: texts.References object (optional).
       srcs: texts.Sources object (optional).
-      metrics_dict: is a dictionary with three keys: 
-        referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics. 
-        Each of those keys' values are a List of the specific metrics.
+      metrics_dict: is a dictionary with three keys:
+      referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics.
+      Each of those keys' values are a List of the specific metrics.
       cache: a diskcache.Cache object for fast lookups of redundant computations.
-    
+
     Returns:
       values: A dict with the results with metric names as keys.
     """
@@ -173,16 +173,6 @@ def process_submission(
 
     Returns a dict keyed by dataset names, containing the dicts for each dataset's results.
     """
-    # values = {"submission_name": outs.name, "param_count": outs.param_count}
-
-    # # TODO: parallelize by throwing this into a pool and returning the value, then doing the values[dataset] assignment when it gets back?
-    # for dataset in outs.datasets:
-    #   logger.info(f"Computing metrics for {dataset}...")
-    #   outs_ds = outs.predictions_for(dataset)
-    #   refs_ds = refs.get(dataset, None)
-    #   srcs_ds = srcs.get(dataset, None)
-    #   values[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict)
-
     # Handle the CPU-bound metrics in parallel to speed up computation.
     manager = Manager()
     shared_dict = manager.dict()
@@ -199,7 +189,9 @@ def process_submission(
         outs_ds = outs.predictions_for(dataset)
         refs_ds = refs.get(dataset, None)
         srcs_ds = srcs.get(dataset, None)
-        job_args.append((dataset, outs_ds, refs_ds, srcs_ds, parallel_metric_dict, cache))
+        job_args.append(
+            (dataset, outs_ds, refs_ds, srcs_ds, parallel_metric_dict, cache)
+        )
 
     pool = Pool(processes=len(job_args))
     pool.starmap(multiprocess_compute, [x for x in job_args])
@@ -354,6 +346,22 @@ def load_references(dataset_name: str) -> Optional[References]:
     return None
 
 
+def load_sources(dataset_name: str) -> Optional[References]:
+    """Load a file with references for a standard GEM dataset (attempt download), return None if not present."""
+    if dataset_name in _DATASET_REFERENCES_URLS:
+        try:
+            dataset_file = ensure_download(
+                "references",
+                dataset_name + ".json",
+                _DATASET_REFERENCES_URLS[dataset_name],
+            )
+            return Sources(dataset_file, language=_SUPPORTED_DATASETS[dataset_name])
+        except Exception as e:
+            logger.info(f"{dataset_name} does not have source associated.")
+            return None
+    return None
+
+
 def load_contrast_set(dataset_name: str) -> Optional[Dict]:
     if dataset_name in _CONTRAST_SET_MATCHES:
         try:
@@ -369,31 +377,6 @@ def load_contrast_set(dataset_name: str) -> Optional[Dict]:
             logger.warn(f"Could not format contrast set for {dataset_name}: {str(e)}")
             logger.warn(f"Looked for this file: {_CONTRAST_SET_MATCHES[dataset_name]}.")
             traceback.print_tb(e.__traceback__)
-            return None
-    return None
-
-
-_DATASET_SOURCES_URLS = {
-    "asset_test": "https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/asset_test.json",
-    "asset_val": "https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/asset_val.json",
-    "turk_test": "https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_test.json",
-    "turk_val": "https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/turk_val.json",
-}
-
-
-def load_sources(dataset_name: str) -> Optional[References]:
-    """Load a file with sources for a standard GEM dataset (attempt download), return None if not present.
-    Note that it can be the same files as for references -- the difference is in the source/target fields inside the JSON structure."""
-    if dataset_name in _DATASET_SOURCES_URLS:
-        try:
-            dataset_file = ensure_download(
-                "references",
-                dataset_name + ".json",
-                _DATASET_SOURCES_URLS[dataset_name],
-            )
-            return Sources(dataset_file)
-        except Exception as e:
-            logger.warn(f"Could not download references for {dataset_name}: {str(e)}")
             return None
     return None
 
@@ -415,7 +398,7 @@ def process_files(config):
     parallel_metrics_list = []
     if config.use_heavy_metrics:
         parallel_metrics_list.append("bertscore")
-        parallel_metrics_list.append("bleurt")
+        # parallel_metrics_list.append("bleurt")
         parallel_metrics_list.append("nubia")
         # parallel_metrics_list.append("questeval")
     serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
@@ -445,17 +428,20 @@ def process_files(config):
 
         src_data = {}
         if config.sources_file:
-            with open(config.references_file, encoding="UTF-8") as fh:
+            with open(config.sources_file, encoding="UTF-8") as fh:
                 src_data = json.load(fh)
                 for dataset in src_data.keys():
                     src_data[dataset] = Sources(
                         src_data[dataset], language=_SUPPORTED_DATASETS[dataset]
                     )
 
-        # Use default reference files if no custom ones are provided.
+        # Use default reference+source files if no custom ones are provided.
         for dataset in data.datasets:
             if dataset not in ref_data:
                 ref_data[dataset] = load_references(dataset)
+
+            if dataset not in src_data:
+                src_data[dataset] = load_sources(dataset)
 
             # Ensure that the reference files are ordered the same way.
             if ref_data[dataset] is not None:

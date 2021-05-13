@@ -9,7 +9,12 @@ class Meteor(ReferencedMetric):
     """METEOR uses the original Java Meteor-1.5 implementation with a wrapper adapted from
     MSCOCO/E2E-metrics."""
 
-    def compute(self, predictions, references):
+    def support_caching(self):
+        # METEOR is corpus-level, so individual examples can't be aggregated.
+        # While individual scores can be computed, the overall score is different.
+        return False
+
+    def compute(self, cache, predictions, references):
         try:
             m = PyMeteorWrapper(predictions.language.alpha_2)
         except Exception as e:

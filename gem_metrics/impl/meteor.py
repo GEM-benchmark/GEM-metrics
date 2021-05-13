@@ -4,6 +4,7 @@
 # Python wrapper for METEOR implementation, by Xinlei Chen
 # Acknowledge Michael Denkowski for the generous discussion and help
 
+import numpy as np
 import subprocess
 import threading
 import os
@@ -73,7 +74,7 @@ class PyMeteorWrapper:
             )
         score = float(self.meteor_p.stdout.readline().strip())
         self.lock.release()
-
+        
         return score, scores
 
     def _stat(self, hypothesis_str, reference_list):

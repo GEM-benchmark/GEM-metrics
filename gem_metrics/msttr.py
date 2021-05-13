@@ -27,12 +27,18 @@ class MSTTR(ReferencelessMetric):
 
     def compute(self, cache, predictions):
         return {
-            f"msttr-{self.window_size}": round(self._MSTTR(
-                predictions.list_tokenized_lower, self.window_size
-            )["msttr_value"], 5),
-            f"msttr-{self.window_size}_nopunct": round(self._MSTTR(
-                predictions.list_tokenized_lower_nopunct, self.window_size
-            )["msttr_value"], 5),
+            f"msttr-{self.window_size}": round(
+                self._MSTTR(predictions.list_tokenized_lower, self.window_size)[
+                    "msttr_value"
+                ],
+                5,
+            ),
+            f"msttr-{self.window_size}_nopunct": round(
+                self._MSTTR(predictions.list_tokenized_lower_nopunct, self.window_size)[
+                    "msttr_value"
+                ],
+                5,
+            ),
         }
 
     def _TTR(self, list_of_words):

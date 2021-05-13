@@ -16,15 +16,15 @@ class SARI(SourceAndReferencedMetric):
     This implementation is adapted from Tensorflow's tensor2tensor implementation [3].
     It has two differences with the original GitHub [1] implementation:
       (1) Define 0/0=1 instead of 0 to give higher scores for predictions that match
-          a target exactly.
+        a target exactly.
       (2) Fix an alleged bug [2] in the keep score computation.
     [1] https://github.com/cocoxu/simplification/blob/master/SARI.py
-        (commit 0210f15)
+      (commit 0210f15)
     [2] https://github.com/cocoxu/simplification/issues/6
     [3] https://github.com/tensorflow/tensor2tensor/blob/master/tensor2tensor/utils/sari_hook.py
     """
 
-    def compute(self, predictions, references, sources):
+    def compute(self, cache, predictions, references, sources):
 
         srcs = [self.normalize(sent) for sent in sources.untokenized]
         preds = [self.normalize(sent) for sent in predictions.untokenized]
@@ -33,11 +33,20 @@ class SARI(SourceAndReferencedMetric):
             for ref_sents in references.untokenized
         ]
 
-        sari_score = []
+        sari_scores = {}
         for i in range(len(srcs)):
-            sari_score.append(self.SARIsent(srcs[i], preds[i], refs[i]))
+            score = {"sari": self.SARIsent(srcs[i], preds[i], refs[i]) * 100}
+            sari_scores[predictions.ids[i]] = score
+            # Write to cache if not None.
+            if cache is not None:
+                cache_key = (
+                    self.__class__.__name__,
+                    predictions.filename,
+                    predictions.ids[i],
+                )
+                cache[cache_key] = score
 
-        return {"sari": 100.0 * (sum(sari_score) / len(sari_score))}
+        return sari_scores
 
     def SARIngram(self, sgrams, cgrams, rgramslist, numref):
         rgramsall = [rgram for rgrams in rgramslist for rgram in rgrams]
@@ -68,7 +77,7 @@ class SARI(SourceAndReferencedMetric):
             # keeptmpscore2 += keepgramcountergood_rep[keepgram] / keepgramcounterall_rep[keepgram]
             keeptmpscore2 += keepgramcountergood_rep[keepgram]
         # Define 0/0=1 instead of 0 to give higher scores for predictions that match
-        #      a target exactly.
+        #    a target exactly.
         keepscore_precision = 1
         keepscore_recall = 1
         if len(keepgramcounter_rep) > 0:
@@ -100,7 +109,7 @@ class SARI(SourceAndReferencedMetric):
                 delgramcountergood_rep[delgram] / delgramcounterall_rep[delgram]
             )
         # Define 0/0=1 instead of 0 to give higher scores for predictions that match
-        #      a target exactly.
+        #    a target exactly.
         delscore_precision = 1
         delscore_recall = 1
         if len(delgramcounter_rep) > 0:
@@ -126,7 +135,7 @@ class SARI(SourceAndReferencedMetric):
             addtmpscore += 1
 
         # Define 0/0=1 instead of 0 to give higher scores for predictions that match
-        #      a target exactly.
+        #    a target exactly.
         addscore_precision = 1
         addscore_recall = 1
         if len(addgramcounter) > 0:

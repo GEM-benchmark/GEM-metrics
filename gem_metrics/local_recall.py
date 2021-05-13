@@ -22,7 +22,11 @@ class LocalRecall(ReferencedMetric):
     The advantage is that we don't have to rely on a part-of-speech tagger.
     """
 
-    def compute(self, predictions, references):
+    def support_caching(self):
+        # LocalRecall is corpus-level, so individual examples can't be aggregated.
+        return False
+
+    def compute(self, cache, predictions, references):
         results = LocalRecall.local_recall_scores(
             predictions.list_tokenized_lower_nopunct,
             references.list_tokenized_lower_nopunct,

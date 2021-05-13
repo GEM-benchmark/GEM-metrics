@@ -24,7 +24,11 @@ class NGramStats(ReferencelessMetric):
     https://github.com/tuetschek/e2e-stats/blob/master/nlg_dataset_stats.py
     """
 
-    def compute(self, predictions):
+    def support_caching(self):
+        # NGramStats is corpus-level, so individual examples can't be aggregated.
+        return False
+
+    def compute(self, cache, predictions):
 
         results = {}
         for data_id, data in [

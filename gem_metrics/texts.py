@@ -31,13 +31,6 @@ class Texts:
 
         self.language = languages.get(alpha_2=language)
 
-        # if len(data["language"]) > 3 or data["language"][0].isupper():
-        #     self.language = languages.get(name=data["language"])
-        # elif len(data["language"]) == 3:
-        #     self.language = languages.get(alpha_3=data["language"])
-        # else:
-        #     self.language = languages.get(alpha_2=data["language"])
-
         # Allow bare lists of strings as well as lists of dicts.
         # In case of Dicts, check for IDs we need to shuffle.
         self.ids = None

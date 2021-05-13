@@ -16,7 +16,7 @@ class BERTScore(ReferencedMetric):
         """Convert from tensor object to list of floats."""
         return [float(score) for score in score_entry]
 
-    def compute(self, predictions, references):
+    def compute(self, cache, predictions, references):
         """Run BERTScore."""
         self.metric.add_batch(
             predictions=predictions.untokenized, references=references.untokenized
@@ -25,7 +25,30 @@ class BERTScore(ReferencedMetric):
         score = self.metric.compute(
             lang=predictions.language.alpha_2, model_type="distilbert-base-uncased"
         )
-        score["precision"] = np.mean(self._make_serializable(score["precision"]))
-        score["recall"] = np.mean(self._make_serializable(score["recall"]))
-        score["f1"] = np.mean(self._make_serializable(score["f1"]))
-        return {"bertscore": score}
+        
+        precisions = self._make_serializable(score["precision"])
+        recalls = self._make_serializable(score["recall"])
+        f1s = self._make_serializable(score["f1"])
+        
+        scores = {}
+        for pred_id, prec, rec, f1 in zip(
+            predictions.ids, precisions, recalls, f1s):
+            score_obj = {
+                "bertscore": {
+                    "precision": prec,
+                    "recall": rec,
+                    "f1": f1
+                    }
+                }
+            
+            # Write to cache if not None.
+            if cache is not None:
+                cache_key = (self.__class__.__name__, predictions.filename, pred_id)
+                cache[cache_key] = score_obj
+            scores[pred_id] = score_obj
+
+        return scores
+        # score["precision"] = np.mean()
+        # score["recall"] = np.mean(self._make_serializable(score["recall"]))
+        # score["f1"] = np.mean(self._make_serializable(score["f1"]))
+        # return {"bertscore": score}
