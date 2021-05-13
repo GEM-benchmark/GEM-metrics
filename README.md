@@ -15,7 +15,7 @@ pip install -r requirements.txt -r requirements-heavy.txt
 
 If you want to just run the metrics from console (and don't need access to the checkout), you can just run:
 ```
-pip install 'gem-metrics[heavy] @ git+https://github.com/tuetschek/GEM-metrics.git'
+pip install 'gem-metrics[heavy] @ git+https://github.com/GEM-benchmark/GEM-metrics.git'
 ```
 
 Note that some NLTK stuff may be downloaded upon first run into a subdirectory where the code is located, 
