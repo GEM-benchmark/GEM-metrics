@@ -15,12 +15,16 @@ pip install -r requirements.txt -r requirements-heavy.txt
 
 If you want to just run the metrics from console (and don't need access to the checkout), you can just run:
 ```
-pip install git+https://github.com/GEM-benchmark/GEM-metrics.git
+pip install 'gem-metrics[heavy] @ git+https://github.com/tuetschek/GEM-metrics.git'
 ```
 
 Note that some NLTK stuff may be downloaded upon first run into a subdirectory where the code is located, 
 so make sure you have write access when you run this.
 Also note that all the required Python libraries are around 3 GB in size when installed.
+
+If you don't need trained metrics (BLEURT, BERTScore, NUBIA, QuestEval), you can ignore the “heavy” part, 
+i.e. only install dependencies from `requirements.txt` or only use `gem-metrics` instead of `gem-metrics[heavy]`
+if installing without checkout. That way, your installed libraries will be ~300 MB.
 
 Usage
 -----
