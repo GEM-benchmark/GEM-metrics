@@ -21,15 +21,18 @@ class MSTTR(ReferencelessMetric):
         self.rnd = random.Random(1234)
         self.window_size = window_size
 
-    def compute(self, predictions):
+    def support_caching(self):
+        # MSTTR is corpus-level, so individual examples can't be aggregated.
+        return False
 
+    def compute(self, cache, predictions):
         return {
-            f"msttr-{self.window_size}": self._MSTTR(
+            f"msttr-{self.window_size}": round(self._MSTTR(
                 predictions.list_tokenized_lower, self.window_size
-            )["msttr_value"],
-            f"msttr-{self.window_size}_nopunct": self._MSTTR(
+            )["msttr_value"], 5),
+            f"msttr-{self.window_size}_nopunct": round(self._MSTTR(
                 predictions.list_tokenized_lower_nopunct, self.window_size
-            )["msttr_value"],
+            )["msttr_value"], 5),
         }
 
     def _TTR(self, list_of_words):

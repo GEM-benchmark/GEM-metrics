@@ -1,4 +1,5 @@
 .*.swp
+*.db
 __pycache__
 gem_metrics/nltk_data
 gem_metrics/impl/data
