@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 from copy import copy
 from dataclasses import dataclass
+from diskcache import Cache
 import json
 from multiprocessing import Process, Manager
 from multiprocessing.pool import ThreadPool as Pool
@@ -100,12 +101,21 @@ def compute(
     refs: Optional[References] = None,
     srcs: Optional[Sources] = None,
     metrics_dict: Dict[str, List] = None,
+    cache: Optional[Cache] = None
 ) -> Dict:
     """Main metrics computation routine for a single dataset.
-    Expects a Predictions and a References object, holding system outputs and corresponding
-    references (References may be None -- only referenceless metrics are computed in such a case).
-    metrics_dict is a dictionary with three keys: referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics. Each of those keys' values are a List of the specific metrics.
-    Returns a dict with the results.
+
+    Args:
+      outs: texts.Predictions object.
+      refs: texts.References object (optional).
+      srcs: texts.Sources object (optional).
+      metrics_dict: is a dictionary with three keys: 
+        referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics. 
+        Each of those keys' values are a List of the specific metrics.
+      cache: a diskcache.Cache object for fast lookups of redundant computations.
+    
+    Returns:
+      values: A dict with the results with metric names as keys.
     """
     # initialize values storage.
     values = {"predictions_file": outs.filename, "N": len(outs)}
@@ -114,7 +124,7 @@ def compute(
     for metric_class in metrics_dict["referenceless_metrics"]:
         logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
         metric = metric_class()
-        values.update(metric.compute(outs))
+        values.update(metric.compute_cached(cache, outs))
         # Explicit deletion due to memory leak when multiple models were instantiated.
         del metric
 
@@ -128,7 +138,7 @@ def compute(
         for metric_class in metrics_dict["referenced_metrics"]:
             logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
             metric = metric_class()
-            values.update(metric.compute(outs, refs))
+            values.update(metric.compute_cached(cache, outs, refs))
             del metric
 
     # compute ref-src-based metrics
@@ -141,7 +151,7 @@ def compute(
         for metric_class in metrics_dict["sourced_and_referenced_metrics"]:
             logger.info(f"Computing {metric_class.__name__}...")
             metric = metric_class()
-            values.update(metric.compute(outs, refs, srcs))
+            values.update(metric.compute_cached(cache, outs, refs, srcs))
             del metric
     return values
 
@@ -152,6 +162,7 @@ def process_submission(
     srcs: Optional[Dict],
     parallel_metric_dict: Dict[str, List],
     serial_metric_dict: Dict[str, List],
+    cache: Optional[Cache] = None,
 ) -> Dict:
     """Process a (potentially) multi-dataset submission. Expects a Submission object
     holding all the predictions, and potentially references and/or sources in a dictionary keyed by
@@ -178,8 +189,8 @@ def process_submission(
     shared_dict["submission_name"] = outs.name
     shared_dict["param_count"] = outs.param_count
 
-    def multiprocess_compute(dataset, outs_ds, refs_ds, srcs_ds, metrics_dict):
-        shared_dict[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict)
+    def multiprocess_compute(dataset, outs_ds, refs_ds, srcs_ds, metrics_dict, cache):
+        shared_dict[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict, cache)
 
     job_args = []
 
@@ -188,7 +199,7 @@ def process_submission(
         outs_ds = outs.predictions_for(dataset)
         refs_ds = refs.get(dataset, None)
         srcs_ds = srcs.get(dataset, None)
-        job_args.append((dataset, outs_ds, refs_ds, srcs_ds, parallel_metric_dict))
+        job_args.append((dataset, outs_ds, refs_ds, srcs_ds, parallel_metric_dict, cache))
 
     pool = Pool(processes=len(job_args))
     pool.starmap(multiprocess_compute, [x for x in job_args])
@@ -203,7 +214,7 @@ def process_submission(
         refs_ds = refs.get(dataset, None)
         srcs_ds = srcs.get(dataset, None)
         shared_dict[dataset] = shared_dict[dataset] | compute(
-            outs_ds, refs_ds, srcs_ds, serial_metric_dict
+            outs_ds, refs_ds, srcs_ds, serial_metric_dict, cache
         )
 
     return dict(shared_dict)
@@ -395,6 +406,7 @@ class Config:
     output_file: str = ""
     use_heavy_metrics: bool = False
     metric_list: list = None
+    cache_folder: str = ""
 
 
 def process_files(config):
@@ -407,6 +419,12 @@ def process_files(config):
         parallel_metrics_list.append("nubia")
         # parallel_metrics_list.append("questeval")
     serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
+
+    # Optionally, set up cache.
+    cache = None
+    if config.cache_folder:
+        cache = Cache(config.cache_folder)
+        cache.stats(enable=True)
 
     # load system predictions
     with open(config.predictions_file, encoding="UTF-8") as fh:
@@ -496,10 +514,15 @@ def process_files(config):
                         logger.info("Dataset successfully added.")
         # Compute all the values.
         values = process_submission(
-            data, ref_data, src_data, parallel_metric_dict, serial_metric_dict
+            outs=data,
+            refs=ref_data,
+            srcs=src_data,
+            parallel_metric_dict=parallel_metric_dict,
+            serial_metric_dict=serial_metric_dict,
+            cache=cache,
         )
 
-    # Single-file mode
+    # Single-file mode.
     else:
         outs = Predictions(data)
         srcs = {}
@@ -519,7 +542,7 @@ def process_files(config):
             assert len(srcs) == len(outs)
         # In single file mode this is automatically all serial.
         serial_metric_dict.update(parallel_metric_dict)
-        values = compute(outs, refs, srcs, serial_metric_dict)
+        values = compute(outs, refs, srcs, serial_metric_dict, cache)
 
     # print output
     out_fh = sys.stdout
@@ -577,6 +600,20 @@ def main():
             + "line argument here, or by using the --heavy-metrics flag"
         ),
     )
+    ap.add_argument(
+        "--cache_folder",
+        type=str,
+        default="",
+        help=(
+            "Optional Path to a cache folder."
+            "This script is computing many different metrics across many different model outputs."
+            "It can thus become *very* slow, especially when the `heavy_metrics`"
+            "setting is enabled. Since challenge and constrast sets may rerun already"
+            "completed evaluations, and you may want to rerun the script for some"
+            "reason, we can set up a disk-persistent key-value storage."
+            "If this argument is specified, it will point to the caching folder. "
+        ),
+    )
     args = ap.parse_args()
 
     # Workaround for metrics that use cmd flags - write all args to config.
@@ -587,6 +624,7 @@ def main():
         output_file=args.output_file,
         use_heavy_metrics=args.heavy_metrics,
         metric_list=args.metric_list,
+        cache_folder=args.cache_folder,
     )
 
     # hack to make BLEURT work -- it'll fail for anything in argv except the program name :-(

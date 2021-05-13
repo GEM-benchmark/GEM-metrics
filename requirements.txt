@@ -1,5 +1,6 @@
 bert_score
 datasets>=1.2.1
+diskcache>=5.2.1
 nltk
 numpy
 rouge-score
