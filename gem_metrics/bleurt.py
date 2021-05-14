@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-
+from .data import ensure_download
 from .metric import ReferencedMetric
-from datasets import load_metric
+from bleurt import score
 import numpy as np
+import tensorflow as tf
 
 
 class BLEURT(ReferencedMetric):
@@ -10,9 +11,14 @@ class BLEURT(ReferencedMetric):
 
     def __init__(self, checkpoint_path="bleurt-base-128"):
         """Load the BLEURT checkpoint into memory."""
-        self.metric = load_metric("bleurt", checkpoint_path=checkpoint_path)
+        ckpt_path = ensure_download(
+                "models",
+                checkpoint_path,
+                f"https://storage.googleapis.com/bleurt-oss/{checkpoint_path}.zip"
+            )
+        self.metric = score.BleurtScorer(ckpt_path)
 
-    def compute(self, predictions, references):
+    def compute(self, cache, predictions, references):
         """Compute the BLEURT score. Multi-ref will be averaged."""
         # Use untokenized here since the module uses its own tokenizer.
         if isinstance(references.untokenized[0], list):
@@ -20,11 +26,20 @@ class BLEURT(ReferencedMetric):
             scores = []
             for pred, refs in zip(predictions.untokenized, references.untokenized):
                 pred_repeated = [pred] * len(refs)
-                self.metric.add_batch(predictions=pred_repeated, references=refs)
-                scores.append(np.mean(self.metric.compute()["scores"]))
+                example_scores = self.metric.score(references=refs, candidates=pred_repeated)
+                scores.append(np.mean(example_scores))
         else:
             self.metric.add_batch(
                 predictions=predictions.untokenized, references=references.untokenized
             )
-            scores = self.metric.compute()["scores"]
-        return {"bleurt": np.mean(scores)}
+            scores = self.metric.score(references=references.untokenized, candidates=predictions.untokenized, batch_size=64)
+
+        formatted_scores = {}
+        for sc, pred_id in zip(scores, predictions.ids):
+            formatted_score = {"bleurt": sc}
+            formatted_scores[pred_id] = formatted_score
+            if cache is not None:
+                cache_key = (self.__class__.__name__, predictions.filename, pred_id)
+                cache[cache_key] = formatted_score
+
+        return formatted_scores

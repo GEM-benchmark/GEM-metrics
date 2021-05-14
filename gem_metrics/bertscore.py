@@ -48,7 +48,3 @@ class BERTScore(ReferencedMetric):
             scores[pred_id] = score_obj
 
         return scores
-        # score["precision"] = np.mean()
-        # score["recall"] = np.mean(self._make_serializable(score["recall"]))
-        # score["f1"] = np.mean(self._make_serializable(score["f1"]))
-        # return {"bertscore": score}

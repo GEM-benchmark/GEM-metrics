@@ -398,7 +398,7 @@ def process_files(config):
     parallel_metrics_list = []
     if config.use_heavy_metrics:
         parallel_metrics_list.append("bertscore")
-        # parallel_metrics_list.append("bleurt")
+        parallel_metrics_list.append("bleurt")
         parallel_metrics_list.append("nubia")
         # parallel_metrics_list.append("questeval")
     serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
@@ -588,6 +588,7 @@ def main():
     )
     ap.add_argument(
         "--cache_folder",
+        "--cache_dir",
         type=str,
         default="",
         help=(

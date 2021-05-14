@@ -9,6 +9,7 @@ import time
 from functools import partial
 import urllib
 import tarfile
+import zipfile
 
 
 _BASE_DIR = os.path.abspath(
@@ -48,7 +49,7 @@ def ensure_download(subdir, target_file, url):
 
     target_dir = os.path.join(_BASE_DIR, subdir)
     target_file = os.path.join(target_dir, target_file)
-    if not os.path.isfile(target_file):
+    if not os.path.isfile(target_file) and not os.path.isdir(target_file):
         os.makedirs(target_dir, exist_ok=True)
         logger.warn(
             f"{target_file} not found -- downloading {url}. This may take a few minutes."
@@ -62,6 +63,14 @@ def ensure_download(subdir, target_file, url):
             logger.warn(f"Extracting from {tmp_fname} to {target_dir}")
             tmp_tgz = tarfile.open(tmp_fname, "r:gz")
             tmp_tgz.extractall(target_dir)
+        elif url.endswith(".zip"):
+            tmp_fname, _ = urllib.request.urlretrieve(
+                url, reporthook=partial(_urlretrieve_reporthook, start_time=time.time())
+            )
+            sys.stderr.write("\n")
+            logger.warn(f"Extracting from {tmp_fname} to {target_dir}")
+            with zipfile.ZipFile(tmp_fname, 'r') as zip_ref:
+                zip_ref.extractall(target_dir)
         # single file download
         else:
             urllib.request.urlretrieve(
