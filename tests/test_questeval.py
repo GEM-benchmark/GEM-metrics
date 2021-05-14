@@ -1,6 +1,6 @@
 import unittest
 import sys
-import gem_metrics
+import gem_metrics.questeval
 from tests.test_sourced_and_referenced import TestSourcedAndReferencedMetric
 
 

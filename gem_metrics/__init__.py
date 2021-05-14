@@ -15,22 +15,10 @@ from logzero import logger
 
 # Data holder classes
 from .texts import Predictions, References, Sources, Submission
-
-# Metric implementations
-from .meteor import Meteor
-from .bertscore import BERTScore
-from .bleu import BLEU
-from .bleurt import BLEURT
-from .rouge import ROUGE
-from .nist import NIST
-from .local_recall import LocalRecall
-from .msttr import MSTTR
-from .ngrams import NGramStats
+# auto-download
 from .data import ensure_download
-from .sari import SARI
-from .nubia import NUBIA
-
-# from .questeval import QuestEval
+# metric types (metrics are imported dynamically)
+from .metric import ReferencedMetric, ReferencelessMetric, SourceAndReferencedMetric
 
 
 def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
@@ -42,50 +30,35 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
     metric_list = list(set(metric_list))
 
     metric_name_to_metric_class = {
-        "bertscore": BERTScore,
-        "bleu": BLEU,
-        "bleurt": BLEURT,
-        "local_recall": LocalRecall,
-        "meteor": Meteor,
-        "nist": NIST,
-        "rouge": ROUGE,
-        "msttr": MSTTR,
-        "ngram": NGramStats,
-        "sari": SARI,
-        "nubia": NUBIA,
-        # 'questeval': QuestEval,
-    }
-
-    metric_name_to_metric_type = {
-        "bertscore": "referenced",
-        "bleu": "referenced",
-        "bleurt": "referenced",
-        "local_recall": "referenced",
-        "meteor": "referenced",
-        "nist": "referenced",
-        "rouge": "referenced",
-        "msttr": "referenceless",
-        "ngram": "referenceless",
-        "sari": "sourced_and_referenced",
-        "nubia": "referenced",
-        # "questeval": "sourced_and_referenced",
+        'bertscore': 'BERTScore',
+        'bleu': 'BLEU',
+        'bleurt': 'BLEURT',
+        'local_recall': 'LocalRecall',
+        'meteor': 'Meteor',
+        'nist': 'NIST',
+        'rouge': 'ROUGE',
+        'msttr': 'MSTTR',
+        'ngrams': 'NGramStats',
+        'sari': 'SARI',
+        'nubia': 'NUBIA',
+        'questeval': 'QuestEval',
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
 
     for metric_name in metric_list:
-        metric_class = metric_name_to_metric_class[metric_name]
-        metric_type = metric_name_to_metric_type[metric_name]
-        if metric_type == "referenced":
+        # import the appropriate class (e.g.  "from .bertscore import BERTScore")
+        metric_module = __import__(metric_name, globals=globals(), fromlist=[metric_name_to_metric_class[metric_name]], level=1)
+        metric_class = getattr(metric_module, metric_name_to_metric_class[metric_name])
+        # sort the class according to type
+        if issubclass(metric_class, ReferencedMetric):
             referenced_list.append(metric_class)
-        elif metric_type == "referenceless":
+        elif issubclass(metric_class, ReferencelessMetric):
             referenceless_list.append(metric_class)
-        elif metric_type == "sourced_and_referenced":
+        elif issubclass(metric_class, SourceAndReferencedMetric):
             sourced_and_referenced_list.append(metric_class)
         else:
-            raise NotImplementedError(
-                f"{metric_type} is not one of [referenced, referenceless, sourced_and_referenced]. Please check the metric_name_to_metric_type dict."
-            )
+            raise NotImplementedError(f'{str(metric_class)} is not one of [referenced, referenceless, sourced_and_referenced]. Please check the metric_name_to_metric_type dict.')
 
     metric_dict = {
         "referenced_metrics": referenced_list,

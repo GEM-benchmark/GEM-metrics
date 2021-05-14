@@ -1,5 +1,5 @@
 import unittest
-import gem_metrics
+import gem_metrics.nubia
 from tests.test_referenced import TestReferencedMetric
 
 
