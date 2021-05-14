@@ -175,7 +175,7 @@ def process_submission(
             (dataset, outs_ds, refs_ds, srcs_ds, parallel_metric_dict, cache)
         )
 
-    pool = Pool(processes=len(job_args))
+    pool = Pool(processes=12)
     pool.starmap(multiprocess_compute, [x for x in job_args])
     pool.close()
     pool.join()
@@ -382,6 +382,7 @@ def process_files(config):
         parallel_metrics_list.append("bertscore")
         parallel_metrics_list.append("bleurt")
         parallel_metrics_list.append("nubia")
+        parallel_metrics_list.append("meteor")
         # parallel_metrics_list.append("questeval")
     serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
 
@@ -554,11 +555,10 @@ def main():
         nargs="+",
         default=[
             "bleu",
-            "meteor",
             "rouge",
             "nist",
             "msttr",
-            "ngram",
+            "ngrams",
             "sari",
             "local_recall",
         ],
