@@ -25,22 +25,15 @@ class BERTScore(ReferencedMetric):
         score = self.metric.compute(
             lang=predictions.language.alpha_2, model_type="distilbert-base-uncased"
         )
-        
+
         precisions = self._make_serializable(score["precision"])
         recalls = self._make_serializable(score["recall"])
         f1s = self._make_serializable(score["f1"])
-        
+
         scores = {}
-        for pred_id, prec, rec, f1 in zip(
-            predictions.ids, precisions, recalls, f1s):
-            score_obj = {
-                "bertscore": {
-                    "precision": prec,
-                    "recall": rec,
-                    "f1": f1
-                    }
-                }
-            
+        for pred_id, prec, rec, f1 in zip(predictions.ids, precisions, recalls, f1s):
+            score_obj = {"bertscore": {"precision": prec, "recall": rec, "f1": f1}}
+
             # Write to cache if not None.
             if cache is not None:
                 cache_key = (self.__class__.__name__, predictions.filename, pred_id)

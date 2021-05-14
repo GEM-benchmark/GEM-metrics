@@ -69,7 +69,7 @@ def ensure_download(subdir, target_file, url):
             )
             sys.stderr.write("\n")
             logger.warn(f"Extracting from {tmp_fname} to {target_dir}")
-            with zipfile.ZipFile(tmp_fname, 'r') as zip_ref:
+            with zipfile.ZipFile(tmp_fname, "r") as zip_ref:
                 zip_ref.extractall(target_dir)
         # single file download
         else:

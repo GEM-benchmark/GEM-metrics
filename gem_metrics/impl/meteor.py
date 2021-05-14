@@ -74,7 +74,7 @@ class PyMeteorWrapper:
             )
         score = float(self.meteor_p.stdout.readline().strip())
         self.lock.release()
-        
+
         return score, scores
 
     def _stat(self, hypothesis_str, reference_list):

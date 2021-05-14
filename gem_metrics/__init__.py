@@ -15,8 +15,10 @@ from logzero import logger
 
 # Data holder classes
 from .texts import Predictions, References, Sources, Submission
+
 # auto-download
 from .data import ensure_download
+
 # metric types (metrics are imported dynamically)
 from .metric import ReferencedMetric, ReferencelessMetric, SourceAndReferencedMetric
 
@@ -30,25 +32,30 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
     metric_list = list(set(metric_list))
 
     metric_name_to_metric_class = {
-        'bertscore': 'BERTScore',
-        'bleu': 'BLEU',
-        'bleurt': 'BLEURT',
-        'local_recall': 'LocalRecall',
-        'meteor': 'Meteor',
-        'nist': 'NIST',
-        'rouge': 'ROUGE',
-        'msttr': 'MSTTR',
-        'ngrams': 'NGramStats',
-        'sari': 'SARI',
-        'nubia': 'NUBIA',
-        'questeval': 'QuestEval',
+        "bertscore": "BERTScore",
+        "bleu": "BLEU",
+        "bleurt": "BLEURT",
+        "local_recall": "LocalRecall",
+        "meteor": "Meteor",
+        "nist": "NIST",
+        "rouge": "ROUGE",
+        "msttr": "MSTTR",
+        "ngrams": "NGramStats",
+        "sari": "SARI",
+        "nubia": "NUBIA",
+        "questeval": "QuestEval",
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
 
     for metric_name in metric_list:
         # import the appropriate class (e.g.  "from .bertscore import BERTScore")
-        metric_module = __import__(metric_name, globals=globals(), fromlist=[metric_name_to_metric_class[metric_name]], level=1)
+        metric_module = __import__(
+            metric_name,
+            globals=globals(),
+            fromlist=[metric_name_to_metric_class[metric_name]],
+            level=1,
+        )
         metric_class = getattr(metric_module, metric_name_to_metric_class[metric_name])
         # sort the class according to type
         if issubclass(metric_class, ReferencedMetric):
@@ -58,7 +65,9 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         elif issubclass(metric_class, SourceAndReferencedMetric):
             sourced_and_referenced_list.append(metric_class)
         else:
-            raise NotImplementedError(f'{str(metric_class)} is not one of [referenced, referenceless, sourced_and_referenced]. Please check the metric_name_to_metric_type dict.')
+            raise NotImplementedError(
+                f"{str(metric_class)} is not one of [referenced, referenceless, sourced_and_referenced]. Please check the metric_name_to_metric_type dict."
+            )
 
     metric_dict = {
         "referenced_metrics": referenced_list,

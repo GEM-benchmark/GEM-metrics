@@ -12,10 +12,10 @@ class BLEURT(ReferencedMetric):
     def __init__(self, checkpoint_path="bleurt-base-128"):
         """Load the BLEURT checkpoint into memory."""
         ckpt_path = ensure_download(
-                "models",
-                checkpoint_path,
-                f"https://storage.googleapis.com/bleurt-oss/{checkpoint_path}.zip"
-            )
+            "models",
+            checkpoint_path,
+            f"https://storage.googleapis.com/bleurt-oss/{checkpoint_path}.zip",
+        )
         self.metric = score.BleurtScorer(ckpt_path)
 
     def compute(self, cache, predictions, references):
@@ -26,13 +26,19 @@ class BLEURT(ReferencedMetric):
             scores = []
             for pred, refs in zip(predictions.untokenized, references.untokenized):
                 pred_repeated = [pred] * len(refs)
-                example_scores = self.metric.score(references=refs, candidates=pred_repeated)
+                example_scores = self.metric.score(
+                    references=refs, candidates=pred_repeated
+                )
                 scores.append(np.mean(example_scores))
         else:
             self.metric.add_batch(
                 predictions=predictions.untokenized, references=references.untokenized
             )
-            scores = self.metric.score(references=references.untokenized, candidates=predictions.untokenized, batch_size=64)
+            scores = self.metric.score(
+                references=references.untokenized,
+                candidates=predictions.untokenized,
+                batch_size=64,
+            )
 
         formatted_scores = {}
         for sc, pred_id in zip(scores, predictions.ids):

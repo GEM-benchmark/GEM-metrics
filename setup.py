@@ -8,7 +8,7 @@ from setuptools import find_packages
 def load_packages(fname):
     packages = []
     for package in [l.strip() for l in open(fname).readlines()]:
-        if package.startswith('git+'):
+        if package.startswith("git+"):
             if "#egg=" not in package:
                 # Intuiting the name by taking last object git url
                 # by taking text without any special char "/@." between "/" and ".git":
@@ -23,12 +23,13 @@ def load_packages(fname):
                 #   "git+https://github.com/recitalAI/QuestEval.git@gem#egg=questeval"
                 # returns "questeval"
                 pk_name = re.search(r"(?<=#egg=)([^/@.]+)", package).group(0)
-            package = f'{pk_name} @ {package}'
+            package = f"{pk_name} @ {package}"
         packages.append(package)
     return packages
 
-install_requires = load_packages('requirements.txt')
-extras_require = {'heavy': load_packages('requirements-heavy.txt')}
+
+install_requires = load_packages("requirements.txt")
+extras_require = {"heavy": load_packages("requirements-heavy.txt")}
 
 
 setup(
