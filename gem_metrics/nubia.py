@@ -14,7 +14,6 @@ class NUBIA(ReferencedMetric):
     def compute(self, cache, predictions, references):
         """Run Nubia"""
         scores = {}
-        print("RUNNING IT NOW.")
         for ref, pred, pred_id in zip(
             references.untokenized, predictions.untokenized, predictions.ids
         ):

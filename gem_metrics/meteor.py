@@ -21,5 +21,9 @@ class Meteor(ReferencedMetric):
             logger.warn(f"Cannot run Meteor -- Skipping: {str(e)}")
             return {"meteor": None}
         # ignore individual sentence scores
-        meteor, _ = m.compute_score(predictions.untokenized, references.untokenized)
+        try:
+            meteor, _ = m.compute_score(predictions.untokenized, references.untokenized)
+        except BrokenPipeError:
+            logger.warn("METEOR FAILED TO COMPUTE.")
+            meteor = -99
         return {"meteor": meteor}

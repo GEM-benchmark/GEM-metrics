@@ -43,7 +43,7 @@ class PyMeteorWrapper:
             cwd=os.path.dirname(self.meteor_path),
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
+            stderr=subprocess.PIPE
         )
         # Used to guarantee thread safety
         self.lock = threading.Lock()
@@ -85,7 +85,10 @@ class PyMeteorWrapper:
         )
         self.meteor_p.stdin.write("{}\n".format(score_line).encode("UTF-8"))
         self.meteor_p.stdin.flush()
-        res = self.meteor_p.stdout.readline().decode("UTF-8").strip()
+        try:
+            res = self.meteor_p.stdout.readline().decode("UTF-8").strip()
+        except BrokenPipeError:
+            res = 0
         return res
 
     def _score(self, hypothesis_str, reference_list):
@@ -102,16 +105,20 @@ class PyMeteorWrapper:
         # EVAL ||| stats
         self.meteor_p.stdin.write("{}\n".format(eval_line).encode("UTF-8"))
         self.meteor_p.stdin.flush()
-        score = float(self.meteor_p.stdout.readline().decode("UTF-8").strip())
-        # bug fix: there are two values returned by the jar file, one average, and one all, so do it twice
-        # thanks for Andrej for pointing this out
-        score = float(self.meteor_p.stdout.readline().decode("UTF-8").strip())
+        try:
+            score = float(self.meteor_p.stdout.readline().decode("UTF-8").strip())
+            # bug fix: there are two values returned by the jar file, one average, and one all, so do it twice
+            # thanks for Andrej for pointing this out
+            score = float(self.meteor_p.stdout.readline().decode("UTF-8").strip())
+        except BrokenPipeError:
+            score = 0
+
         self.lock.release()
         return score
 
     def __del__(self):
         if hasattr(self, "lock") and self.lock:
-            self.lock.acquire()
+            self.lock.acquire(timeout=20)
         if hasattr(self, "meteor_p") and self.meteor_p:
             self.meteor_p.stdin.close()
             self.meteor_p.kill()

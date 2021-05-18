@@ -105,6 +105,12 @@ def compute(
     # compute referenceless metrics.
     for metric_class in metrics_dict["referenceless_metrics"]:
         logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
+        if cache is not None:
+            cache_overall_key = (metric_class.__name__, outs.filename)
+            previous_result = cache.get(cache_overall_key, None)
+            if previous_result is not None:
+                values.update(previous_result)
+                continue
         metric = metric_class()
         values.update(metric.compute_cached(cache, outs))
         # Explicit deletion due to memory leak when multiple models were instantiated.
@@ -119,6 +125,12 @@ def compute(
         values["references_file"] = refs.filename
         for metric_class in metrics_dict["referenced_metrics"]:
             logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
+            if cache is not None:
+                cache_overall_key = (metric_class.__name__, outs.filename)
+                previous_result = cache.get(cache_overall_key, None)
+                if previous_result is not None:
+                    values.update(previous_result)
+                    continue
             metric = metric_class()
             values.update(metric.compute_cached(cache, outs, refs))
             del metric
@@ -132,6 +144,12 @@ def compute(
         values["references_file"] = refs.filename
         for metric_class in metrics_dict["sourced_and_referenced_metrics"]:
             logger.info(f"Computing {metric_class.__name__}...")
+            if cache is not None:
+                cache_overall_key = (metric_class.__name__, outs.filename)
+                previous_result = cache.get(cache_overall_key, None)
+                if previous_result is not None:
+                    values.update(previous_result)
+                    continue
             metric = metric_class()
             values.update(metric.compute_cached(cache, outs, refs, srcs))
             del metric
@@ -241,14 +259,14 @@ _SUPPORTED_DATASETS = {
     "wiki_auto_asset_turk_challenge_test_turk_bfp02": "en",
     "wiki_auto_asset_turk_challenge_test_turk_bfp05": "en",
     "wiki_auto_asset_turk_challenge_test_turk_nopunc": "en",
-    "wiki_lingua_spanish_es_val": "es",
-    "wiki_lingua_spanish_es_test": "es",
-    "wiki_lingua_russian_ru_val": "ru",
-    "wiki_lingua_russian_ru_test": "ru",
-    "wiki_lingua_turkish_tr_val": "tr",
-    "wiki_lingua_turkish_tr_test": "tr",
-    "wiki_lingua_vietnamese_vi_val": "vi",
-    "wiki_lingua_vietnamese_vi_test": "vi",
+    "wiki_lingua_spanish_es_val": "en",
+    "wiki_lingua_spanish_es_test": "en",
+    "wiki_lingua_russian_ru_val": "en",
+    "wiki_lingua_russian_ru_test": "en",
+    "wiki_lingua_turkish_tr_val": "en",
+    "wiki_lingua_turkish_tr_test": "en",
+    "wiki_lingua_vietnamese_vi_val": "en",
+    "wiki_lingua_vietnamese_vi_test": "en",
     "xsum_val": "en",
     "xsum_test": "en",
     "xsum_challenge_test_backtranslation": "en",

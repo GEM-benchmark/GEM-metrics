@@ -42,12 +42,6 @@ class AbstractMetric:
     def compute_cached(self, cache, predictions, *args):
         """Loops through the predictions to check for cache hits before computing."""
         original_order = copy(predictions.ids)
-        # First check if the whole computation is duplicate and cached.
-        if cache is not None:
-            cache_overall_key = (self.__class__.__name__, predictions.filename)
-            previous_result = cache.get(cache_overall_key, None)
-            if previous_result is not None:
-                return previous_result
 
         to_compute = []
         cached_scores = {}
@@ -86,6 +80,7 @@ class AbstractMetric:
             aggregated_score = computed_scores
         if cache is not None:
             # Save overall output regardless of whether individual scores can be cached.
+            cache_overall_key = (self.__class__.__name__, predictions.filename)
             cache[cache_overall_key] = aggregated_score
         return aggregated_score
 
