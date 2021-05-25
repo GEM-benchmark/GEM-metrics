@@ -5,7 +5,11 @@ from .metric import ReferencedMetric
 
 class NUBIA(ReferencedMetric):
     def __init__(self):
-        """Downloads pretrained models for nubia, and loads them into memory"""
+        """Downloads pretrained models for nubia, and loads them into memory."""
+        # Moved to initialize to support caching without initialization.
+        pass
+
+    def _initialize(self):
         self.metric = Nubia()
         self.metric.roberta_STS.to("cuda")
         self.metric.roberta_MNLI.to("cuda")

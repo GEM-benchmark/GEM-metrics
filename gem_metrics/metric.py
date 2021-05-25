@@ -11,9 +11,16 @@ class AbstractMetric:
     def support_caching(self):
         return True
 
+    def _initialize(self):
+        """Function that initializes heavy models outside of the __init___."""
+        pass
+
     def _aggregate_scores(self, score_list: List):
+        """Helper function to aggregate multiple scores into a single one."""
+        if not score_list:
+            return {}
         if isinstance(score_list[0], float):
-            return ValueError(
+            raise ValueError(
                 "A cached metric should return a dictionary for each datapoint."
             )
         elif isinstance(score_list[0], dict):
@@ -37,7 +44,8 @@ class AbstractMetric:
         else:
             return ValueError(
                 "Please add to this function an aggregator for your data format."
-            )
+                )
+
 
     def compute_cached(self, cache, predictions, *args):
         """Loops through the predictions to check for cache hits before computing."""
@@ -60,6 +68,8 @@ class AbstractMetric:
         # Compute the rest if anything is left to compute.
         computed_scores = {}
         if to_compute:
+            # Initialize in case it is defined (heavy metrics).
+            self._initialize()
             # Each class needs filter() to list of ID in order.
             # Filtering done on copy to avoid destroying the underlying obj.
             new_arg_list = []
@@ -78,10 +88,6 @@ class AbstractMetric:
         else:
             # If module does not support caching, just return module output directly.
             aggregated_score = computed_scores
-        if cache is not None:
-            # Save overall output regardless of whether individual scores can be cached.
-            cache_overall_key = (self.__class__.__name__, predictions.filename)
-            cache[cache_overall_key] = aggregated_score
         return aggregated_score
 
 

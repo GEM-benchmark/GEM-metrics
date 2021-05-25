@@ -11,10 +11,14 @@ class BLEURT(ReferencedMetric):
 
     def __init__(self, checkpoint_path="bleurt-base-128"):
         """Load the BLEURT checkpoint into memory."""
+        # Moved to initialize to support caching without initialization.
+        self.checkpoint_path = checkpoint_path
+
+    def _initialize(self):
         ckpt_path = ensure_download(
             "models",
-            checkpoint_path,
-            f"https://storage.googleapis.com/bleurt-oss/{checkpoint_path}.zip",
+            self.checkpoint_path,
+            f"https://storage.googleapis.com/bleurt-oss/{self.checkpoint_path}.zip",
         )
         self.metric = score.BleurtScorer(ckpt_path)
 

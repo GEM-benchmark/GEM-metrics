@@ -10,6 +10,10 @@ class BERTScore(ReferencedMetric):
 
     def __init__(self):
         """Load the BERT checkpoint into memory."""
+        # Moved to initialize to support caching without initialization.
+        pass
+
+    def _initialize(self):
         self.metric = load_metric("bertscore", batch_size=64)
 
     def _make_serializable(self, score_entry):

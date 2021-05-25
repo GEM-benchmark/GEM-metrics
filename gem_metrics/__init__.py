@@ -84,6 +84,7 @@ def compute(
     srcs: Optional[Sources] = None,
     metrics_dict: Dict[str, List] = None,
     cache: Optional[Cache] = None,
+    dataset_name: Optional[str] = ""
 ) -> Dict:
     """Main metrics computation routine for a single dataset.
 
@@ -104,15 +105,20 @@ def compute(
 
     # compute referenceless metrics.
     for metric_class in metrics_dict["referenceless_metrics"]:
-        logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
         if cache is not None:
-            cache_overall_key = (metric_class.__name__, outs.filename)
+            # Add caching - need metric name, output filename, and dataset_name (to support challenge_sets).
+            cache_overall_key = (metric_class.__name__, outs.filename, dataset_name)
             previous_result = cache.get(cache_overall_key, None)
             if previous_result is not None:
                 values.update(previous_result)
+                logger.info(f"Using cached {metric_class.__name__} result for {outs.filename}...")
                 continue
+        logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
         metric = metric_class()
-        values.update(metric.compute_cached(cache, outs))
+        result = metric.compute_cached(cache, outs)
+        values.update(result)
+        if cache is not None:
+            cache[cache_overall_key] = result
         # Explicit deletion due to memory leak when multiple models were instantiated.
         del metric
 
@@ -124,15 +130,19 @@ def compute(
             )
         values["references_file"] = refs.filename
         for metric_class in metrics_dict["referenced_metrics"]:
-            logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
             if cache is not None:
-                cache_overall_key = (metric_class.__name__, outs.filename)
+                cache_overall_key = (metric_class.__name__, outs.filename, dataset_name)
                 previous_result = cache.get(cache_overall_key, None)
                 if previous_result is not None:
                     values.update(previous_result)
+                    logger.info(f"Using cached {metric_class.__name__} result for {outs.filename}...")
                     continue
+            logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
             metric = metric_class()
-            values.update(metric.compute_cached(cache, outs, refs))
+            result = metric.compute_cached(cache, outs, refs)
+            values.update(result)
+            if cache is not None:
+                cache[cache_overall_key] = result
             del metric
 
     # compute ref-src-based metrics
@@ -143,15 +153,19 @@ def compute(
             )
         values["references_file"] = refs.filename
         for metric_class in metrics_dict["sourced_and_referenced_metrics"]:
-            logger.info(f"Computing {metric_class.__name__}...")
             if cache is not None:
-                cache_overall_key = (metric_class.__name__, outs.filename)
+                cache_overall_key = (metric_class.__name__, outs.filename, dataset_name)
                 previous_result = cache.get(cache_overall_key, None)
                 if previous_result is not None:
                     values.update(previous_result)
+                    logger.info(f"Using cached {metric_class.__name__} result for {outs.filename}...")
                     continue
+            logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
             metric = metric_class()
-            values.update(metric.compute_cached(cache, outs, refs, srcs))
+            result = metric.compute_cached(cache, outs, refs, srcs)
+            values.update(result)
+            if cache is not None:
+                cache[cache_overall_key] = result
             del metric
     return values
 
@@ -180,7 +194,7 @@ def process_submission(
     shared_dict["param_count"] = outs.param_count
 
     def multiprocess_compute(dataset, outs_ds, refs_ds, srcs_ds, metrics_dict, cache):
-        shared_dict[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict, cache)
+        shared_dict[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict, cache, dataset)
 
     job_args = []
 
@@ -206,7 +220,7 @@ def process_submission(
         refs_ds = refs.get(dataset, None)
         srcs_ds = srcs.get(dataset, None)
         shared_dict[dataset] = shared_dict[dataset] | compute(
-            outs_ds, refs_ds, srcs_ds, serial_metric_dict, cache
+            outs_ds, refs_ds, srcs_ds, serial_metric_dict, cache, dataset
         )
 
     return dict(shared_dict)
@@ -304,12 +318,14 @@ _CHALLENGE_SET_MATCHES = {
 
 _CONTRAST_SET_BASE = [
     "cs_restaurants_test",
+    "e2e_nlg_test",
+    "schema_guided_dialog_test",
     "totto_test",
     "xsum_test",
     "web_nlg_en_test",
     "web_nlg_ru_test",
     "wiki_auto_asset_turk_test_asset",
-    # "wiki_auto_asset_turk_test_turk",
+    "wiki_auto_asset_turk_test_turk",
 ]
 
 _LANGUAGES = {}
