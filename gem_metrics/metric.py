@@ -2,6 +2,7 @@
 from copy import copy
 import numpy as np
 from typing import List
+from logzero import logger
 
 
 class AbstractMetric:
@@ -44,8 +45,7 @@ class AbstractMetric:
         else:
             return ValueError(
                 "Please add to this function an aggregator for your data format."
-                )
-
+            )
 
     def compute_cached(self, cache, predictions, *args):
         """Loops through the predictions to check for cache hits before computing."""
@@ -78,6 +78,10 @@ class AbstractMetric:
                 new_arg.assign_ids_and_unscramble(to_compute)
                 new_arg_list.append(new_arg)
             computed_scores = self.compute(cache, *new_arg_list)
+        else:
+            logger.info(
+                f"Everything in {self.__class__.__name__} for {predictions.filename} was cached :)"
+            )
 
         if self.support_caching():
             # Combine them back and reshuffle.

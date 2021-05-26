@@ -43,7 +43,7 @@ class PyMeteorWrapper:
             cwd=os.path.dirname(self.meteor_path),
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            stderr=subprocess.PIPE,
         )
         # Used to guarantee thread safety
         self.lock = threading.Lock()

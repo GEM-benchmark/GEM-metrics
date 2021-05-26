@@ -29,7 +29,9 @@ class ROUGE(ReferencedMetric):
                 # get best score for all leave-one-out sets
                 best_scores = []
                 for leave in range(len(refs)):
-                    cur_scores_leave_one = [cur_scores[s] for s in range(len(refs)) if s != leave]
+                    cur_scores_leave_one = [
+                        cur_scores[s] for s in range(len(refs)) if s != leave
+                    ]
                     best_scores.append(
                         {
                             rouge_type: max(

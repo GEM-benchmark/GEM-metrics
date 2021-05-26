@@ -84,7 +84,7 @@ def compute(
     srcs: Optional[Sources] = None,
     metrics_dict: Dict[str, List] = None,
     cache: Optional[Cache] = None,
-    dataset_name: Optional[str] = ""
+    dataset_name: Optional[str] = "",
 ) -> Dict:
     """Main metrics computation routine for a single dataset.
 
@@ -111,7 +111,9 @@ def compute(
             previous_result = cache.get(cache_overall_key, None)
             if previous_result is not None:
                 values.update(previous_result)
-                logger.info(f"Using cached {metric_class.__name__} result for {outs.filename}...")
+                logger.info(
+                    f"Using cached {metric_class.__name__} result for {outs.filename}..."
+                )
                 continue
         logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
         metric = metric_class()
@@ -135,7 +137,9 @@ def compute(
                 previous_result = cache.get(cache_overall_key, None)
                 if previous_result is not None:
                     values.update(previous_result)
-                    logger.info(f"Using cached {metric_class.__name__} result for {outs.filename}...")
+                    logger.info(
+                        f"Using cached {metric_class.__name__} result for {outs.filename}..."
+                    )
                     continue
             logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
             metric = metric_class()
@@ -158,7 +162,9 @@ def compute(
                 previous_result = cache.get(cache_overall_key, None)
                 if previous_result is not None:
                     values.update(previous_result)
-                    logger.info(f"Using cached {metric_class.__name__} result for {outs.filename}...")
+                    logger.info(
+                        f"Using cached {metric_class.__name__} result for {outs.filename}..."
+                    )
                     continue
             logger.info(f"Computing {metric_class.__name__} for {outs.filename}...")
             metric = metric_class()
@@ -194,7 +200,9 @@ def process_submission(
     shared_dict["param_count"] = outs.param_count
 
     def multiprocess_compute(dataset, outs_ds, refs_ds, srcs_ds, metrics_dict, cache):
-        shared_dict[dataset] = compute(outs_ds, refs_ds, srcs_ds, metrics_dict, cache, dataset)
+        shared_dict[dataset] = compute(
+            outs_ds, refs_ds, srcs_ds, metrics_dict, cache, dataset
+        )
 
     job_args = []
 
@@ -423,7 +431,12 @@ def process_files(config):
     # Optionally, set up cache.
     cache = None
     if config.cache_folder:
-        cache = Cache(config.cache_folder)
+        cache = Cache(
+            config.cache_folder,
+            size_limit=int(4e10),
+            cull_limit=0,
+            eviction_policy="none",
+        )
         cache.stats(enable=True)
 
     # load system predictions
