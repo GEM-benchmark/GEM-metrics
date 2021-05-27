@@ -431,11 +431,13 @@ def process_files(config):
     # Optionally, set up cache.
     cache = None
     if config.cache_folder:
+        # Set up to grow up to 10 GB without evictions and operating in-memory.
         cache = Cache(
             config.cache_folder,
             size_limit=int(4e10),
             cull_limit=0,
             eviction_policy="none",
+            sqlite_cache_size=32000
         )
         cache.stats(enable=True)
 
