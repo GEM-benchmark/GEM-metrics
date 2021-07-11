@@ -1,4 +1,4 @@
 nubia-score
 bert_score
 git+https://github.com/google-research/bleurt.git
-git+https://github.com/recitalAI/QuestEval.git@gem#egg=questeval
+questeval
