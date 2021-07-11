@@ -1,4 +1,4 @@
 nubia-score
 bert_score
 git+https://github.com/google-research/bleurt.git
-questeval
+questeval==0.2.4
