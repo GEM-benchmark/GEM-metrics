@@ -14,6 +14,10 @@ class NUBIA(ReferencedMetric):
         self.metric.roberta_STS.to("cuda")
         self.metric.roberta_MNLI.to("cuda")
         self.metric.gpt_model.to("cuda")
+        
+    def support_caching(self):
+        # MSTTR is corpus-level, so individual examples can't be aggregated.
+        return True
 
     def compute(self, cache, predictions, references):
         """Run Nubia"""
@@ -38,7 +42,9 @@ class NUBIA(ReferencedMetric):
                 )
                 score = {"nubia": features}
             else:
-                score = {"nubia": self.metric.score(ref, pred, get_features=True)}
+                score = self.metric.score(ref, pred, get_features=True)
+                score["features"]["nubia_score"] = score["nubia_score"]
+                score = {"nubia": score["features"]}
             # Write to cache if not None.
             if cache is not None:
                 cache_key = (self.__class__.__name__, predictions.filename, pred_id)

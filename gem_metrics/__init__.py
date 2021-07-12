@@ -3,6 +3,7 @@
 from argparse import ArgumentParser
 from copy import copy
 from dataclasses import dataclass
+from gem_metrics.nubia import NUBIA
 from diskcache import Cache
 import json
 from multiprocessing import Process, Manager
@@ -135,7 +136,7 @@ def compute(
             if cache is not None:
                 cache_overall_key = (metric_class.__name__, outs.filename, dataset_name)
                 previous_result = cache.get(cache_overall_key, None)
-                if previous_result is not None:
+                if previous_result is not None and metric_class != NUBIA:
                     values.update(previous_result)
                     logger.info(
                         f"Using cached {metric_class.__name__} result for {outs.filename}..."
@@ -297,6 +298,12 @@ _SUPPORTED_DATASETS = {
     "xsum_challenge_test_nopunc": "en",
     "xsum_challenge_test_covid": "en",
 }
+# Also add "*_validation" compatibility.
+_VAL_COMPATIBILITY_DICT = {}
+for key, value in _SUPPORTED_DATASETS.items():
+    if key.endswith("_val"):
+        _VAL_COMPATIBILITY_DICT[key.replace("_val", "_validation")] = value
+_SUPPORTED_DATASETS.update(_VAL_COMPATIBILITY_DICT)
 
 # URLs to download standard references from
 _CHALLENGE_SET_MATCHES = {
@@ -336,8 +343,6 @@ _CONTRAST_SET_BASE = [
     "wiki_auto_asset_turk_test_turk",
 ]
 
-_LANGUAGES = {}
-
 _CONTRAST_SET_MATCHES = {
     dataset_name: f"https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/{dataset_name}_contrast_sets.json"
     for dataset_name in _CONTRAST_SET_BASE
@@ -350,7 +355,7 @@ _DATASET_REFERENCES_URLS = {
 # Fix val -> validation in download.
 for key, value in _DATASET_REFERENCES_URLS.items():
     if key.endswith("val"):
-        _DATASET_REFERENCES_URLS[key] = value.replace("val", "validation")
+        _DATASET_REFERENCES_URLS[key] = value.replace("_val", "_validation")
 
 
 def load_references(dataset_name: str) -> Optional[References]:
@@ -434,7 +439,7 @@ def process_files(config):
         # Set up to grow up to 10 GB without evictions and operating in-memory.
         cache = Cache(
             config.cache_folder,
-            size_limit=int(4e10),
+            size_limit=int(4e11),
             cull_limit=0,
             eviction_policy="none",
             sqlite_cache_size=32000

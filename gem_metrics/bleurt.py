@@ -35,9 +35,6 @@ class BLEURT(ReferencedMetric):
                 )
                 scores.append(np.mean(example_scores))
         else:
-            self.metric.add_batch(
-                predictions=predictions.untokenized, references=references.untokenized
-            )
             scores = self.metric.score(
                 references=references.untokenized,
                 candidates=predictions.untokenized,

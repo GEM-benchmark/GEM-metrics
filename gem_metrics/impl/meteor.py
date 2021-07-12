@@ -69,9 +69,12 @@ class PyMeteorWrapper:
         self.meteor_p.stdin.write("{}\n".format(eval_line).encode("UTF-8"))
         self.meteor_p.stdin.flush()
         for _ in range(len(predictions)):
-            scores.append(
-                float(self.meteor_p.stdout.readline().decode("UTF-8").strip())
-            )
+            try:
+                scores.append(
+                    float(self.meteor_p.stdout.readline().decode("UTF-8").strip())
+                )
+            except ValueError:
+                return -1., [0.] * len(predictions)
         score = float(self.meteor_p.stdout.readline().strip())
         self.lock.release()
 

@@ -177,7 +177,8 @@ class Submission:
         for key, data in self.all_data["tasks"].items():
             data["filename"] = self.name + "/" + key
             # Create Predictions with correct language - default to en.
-            self.entries[key] = Predictions(
+            # Also change dashes to underscores since that is a common error.
+            self.entries[key.replace("-", "_")] = Predictions(
                 data, language=language_table.get(key, "en")
             )
 

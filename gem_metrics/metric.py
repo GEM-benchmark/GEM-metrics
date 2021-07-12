@@ -58,6 +58,7 @@ class AbstractMetric:
             for pred_id in predictions.ids:
                 cache_key = (self.__class__.__name__, predictions.filename, pred_id)
                 current_score = cache.get(cache_key, None)
+                    
                 if current_score is not None:
                     cached_scores[pred_id] = current_score
                 else:
