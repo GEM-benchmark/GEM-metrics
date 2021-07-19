@@ -30,7 +30,7 @@ _SUPPORTED_DATASETS = {
     "cs_restaurants_challenge_train_sample": {"language": "cs", "task": "data2text"},
     "cs_restaurants_challenge_validation_sample": {"language": "cs", "task": "data2text"},
     "dart_val": {"language": "en", "task": "data2text"},
-    "dart_test": {"language": "en", "task": "data2text"},
+    # "dart_test": {"language": "en", "task": "data2text"},
     "e2e_nlg_val": {"language": "en", "task": "data2text"},
     "e2e_nlg_test": {"language": "en", "task": "data2text"},
     "e2e_nlg_challenge_test_scramble": {"language": "en", "task": "data2text"},
