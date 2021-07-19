@@ -244,7 +244,7 @@ _SUPPORTED_DATASETS = {
     # "common_gen_test": "en",
     # "common_gen_challenge_test_scramble": "en",
     "dart_val": "en",
-    "dart_test": "en",
+    # "dart_test": "en",
     "e2e_nlg_val": "en",
     "e2e_nlg_test": "en",
     "e2e_nlg_challenge_test_scramble": "en",

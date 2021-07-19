@@ -14,10 +14,6 @@ class NUBIA(ReferencedMetric):
         self.metric.roberta_STS.to("cuda")
         self.metric.roberta_MNLI.to("cuda")
         self.metric.gpt_model.to("cuda")
-        
-    def support_caching(self):
-        # MSTTR is corpus-level, so individual examples can't be aggregated.
-        return True
 
     def compute(self, cache, predictions, references):
         """Run Nubia"""
