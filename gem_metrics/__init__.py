@@ -8,7 +8,6 @@ from gem_metrics.config import (get_all_datasets, get_language_for_dataset,
                                 get_parent_dataset_for_transformation,
                                 get_all_subpopulation_sets,
                                 get_url_for_subpopulation)
-from gem_metrics.nubia import NUBIA
 from diskcache import Cache
 import json
 from multiprocessing import Process, Manager
@@ -141,7 +140,7 @@ def compute(
             if cache is not None:
                 cache_overall_key = (metric_class.__name__, outs.filename, dataset_name)
                 previous_result = cache.get(cache_overall_key, None)
-                if previous_result is not None and metric_class != NUBIA:
+                if previous_result is not None:
                     values.update(previous_result)
                     logger.info(
                         f"Using cached {metric_class.__name__} result for {outs.filename}..."

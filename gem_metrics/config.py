@@ -121,28 +121,23 @@ for dataset_name, settings in _SUPPORTED_DATASETS.items():
 
 # If you want to add a custom dataset / url, you can add it here.
 # Just ensure that your entry has `language`, `task`, and `url` set.
-#
+
+# HERE
 
 # Access functions used by the main scripts.
 def get_all_datasets():
     return list(_SUPPORTED_DATASETS.keys())
 
 def get_language_for_dataset(dataset_name):
-    data_config = _SUPPORTED_DATASETS.get(dataset_name, None)
-    if data_config is None:
-        raise ValueError(f"Please add {dataset_name} to the config.")
+    data_config = _SUPPORTED_DATASETS.get(dataset_name, {'language': 'en'})
     return data_config['language']
     
 def get_task_type_for_dataset(dataset_name):
-    data_config = _SUPPORTED_DATASETS.get(dataset_name, None)
-    if data_config is None:
-        raise ValueError(f"Please add {dataset_name} to the config.")
+    data_config = _SUPPORTED_DATASETS.get(dataset_name, {'task':'text2text'})
     return data_config["task"]
 
 def get_url_for_dataset(dataset_name):
-    data_config = _SUPPORTED_DATASETS.get(dataset_name, None)
-    if data_config is None:
-        raise ValueError(f"Please add {dataset_name} to the config.")
+    data_config = _SUPPORTED_DATASETS.get(dataset_name, {'url': ""})
     return data_config["url"]
     
 
