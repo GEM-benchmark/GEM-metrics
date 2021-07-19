@@ -17,7 +17,11 @@ class QuestEval(SourceAndReferencedMetric):
             language=self.language,
         )
 
-    def compute(self, predictions, references, sources):
+    def support_caching(self):
+        # We are using corpus-level QuestEval. 
+        return False
+
+    def compute(self, cache, predictions, references, sources):
         # If task or language is different, we must change QA / QG models for questeval
         if predictions.task != self.task or predictions.language.alpha_2 != self.language:
             self.task = predictions.task
@@ -52,8 +56,12 @@ class QuestEval(SourceAndReferencedMetric):
             list_references=local_references,
         )
 
-        return {
-            'questeval': {
-                "f1": scores["corpus_score"]
-            }
-        }
+        formatted_scores = {}
+        for sc, pred_id in zip(scores['ex_level_scores'], predictions.ids):
+            formatted_score = {"questeval": sc}
+            formatted_scores[pred_id] = formatted_score
+            if cache is not None:
+                cache_key = (self.__class__.__name__, predictions.filename, pred_id)
+                cache[cache_key] = formatted_score
+
+        return formatted_scores

@@ -3,6 +3,11 @@
 from argparse import ArgumentParser
 from copy import copy
 from dataclasses import dataclass
+from gem_metrics.config import (get_all_datasets, get_language_for_dataset, 
+                                get_url_for_dataset, get_all_transformation_sets,
+                                get_parent_dataset_for_transformation,
+                                get_all_subpopulation_sets,
+                                get_url_for_subpopulation)
 from gem_metrics.nubia import NUBIA
 from diskcache import Cache
 import json
@@ -234,140 +239,16 @@ def process_submission(
 
     return dict(shared_dict)
 
-
-# URLs to download standard references from
-_SUPPORTED_DATASETS = {
-    "cs_restaurants_val": "cs",
-    "cs_restaurants_test": "cs",
-    "cs_restaurants_challenge_test_scramble": "cs",
-    "common_gen_val": "cs",
-    # "common_gen_test": "en",
-    # "common_gen_challenge_test_scramble": "en",
-    "dart_val": "en",
-    # "dart_test": "en",
-    "e2e_nlg_val": "en",
-    "e2e_nlg_test": "en",
-    "e2e_nlg_challenge_test_scramble": "en",
-    "mlsum_de_val": "de",
-    "mlsum_de_test": "de",
-    "mlsum_de_challenge_test_covid": "de",
-    "mlsum_es_val": "es",
-    "mlsum_es_test": "es",
-    "mlsum_es_challenge_test_covid": "es",
-    "schema_guided_dialog_val": "en",
-    "schema_guided_dialog_test": "en",
-    "schema_guided_dialog_challenge_test_backtranslation": "en",
-    "schema_guided_dialog_challenge_test_bfp02": "en",
-    "schema_guided_dialog_challenge_test_bfp05": "en",
-    "schema_guided_dialog_challenge_test_nopunc": "en",
-    "schema_guided_dialog_challenge_test_scramble": "en",
-    "totto_val": "en",
-    "totto_test": "en",
-    "totto_challenge_test_scramble": "en",
-    "web_nlg_en_val": "en",
-    "web_nlg_en_test": "en",
-    "web_nlg_en_challenge_test_scramble": "en",
-    "web_nlg_en_challenge_test_numbers": "en",
-    "web_nlg_ru_val": "ru",
-    "web_nlg_ru_test": "ru",
-    "web_nlg_ru_challenge_test_scramble": "ru",
-    "wiki_auto_asset_turk_val": "en",
-    "wiki_auto_asset_turk_test_asset": "en",
-    "wiki_auto_asset_turk_test_turk": "en",
-    "wiki_auto_asset_turk_challenge_test_asset_backtranslation": "en",
-    "wiki_auto_asset_turk_challenge_test_asset_bfp02": "en",
-    "wiki_auto_asset_turk_challenge_test_asset_bfp05": "en",
-    "wiki_auto_asset_turk_challenge_test_asset_nopunc": "en",
-    "wiki_auto_asset_turk_challenge_test_turk_backtranslation": "en",
-    "wiki_auto_asset_turk_challenge_test_turk_bfp02": "en",
-    "wiki_auto_asset_turk_challenge_test_turk_bfp05": "en",
-    "wiki_auto_asset_turk_challenge_test_turk_nopunc": "en",
-    "wiki_lingua_spanish_es_val": "en",
-    "wiki_lingua_spanish_es_test": "en",
-    "wiki_lingua_russian_ru_val": "en",
-    "wiki_lingua_russian_ru_test": "en",
-    "wiki_lingua_turkish_tr_val": "en",
-    "wiki_lingua_turkish_tr_test": "en",
-    "wiki_lingua_vietnamese_vi_val": "en",
-    "wiki_lingua_vietnamese_vi_test": "en",
-    "xsum_val": "en",
-    "xsum_test": "en",
-    "xsum_challenge_test_backtranslation": "en",
-    "xsum_challenge_test_bfp_02": "en",
-    "xsum_challenge_test_bfp_05": "en",
-    "xsum_challenge_test_nopunc": "en",
-    "xsum_challenge_test_covid": "en",
-}
-# Also add "*_validation" compatibility.
-_VAL_COMPATIBILITY_DICT = {}
-for key, value in _SUPPORTED_DATASETS.items():
-    if key.endswith("_val"):
-        _VAL_COMPATIBILITY_DICT[key.replace("_val", "_validation")] = value
-_SUPPORTED_DATASETS.update(_VAL_COMPATIBILITY_DICT)
-
-# URLs to download standard references from
-_CHALLENGE_SET_MATCHES = {
-    "cs_restaurants_challenge_test_scramble": "cs_restaurants_test",
-    "web_nlg_ru_challenge_test_scramble": "web_nlg_ru_test",
-    "schema_guided_dialog_challenge_test_backtranslation": "schema_guided_dialog_test",
-    "schema_guided_dialog_challenge_test_bfp02": "schema_guided_dialog_test",
-    "schema_guided_dialog_challenge_test_bfp05": "schema_guided_dialog_test",
-    "schema_guided_dialog_challenge_test_nopunc": "schema_guided_dialog_test",
-    "schema_guided_dialog_challenge_test_scramble": "schema_guided_dialog_test",
-    "xsum_challenge_test_backtranslation": "xsum_test",
-    "xsum_challenge_test_bfp_02": "xsum_test",
-    "xsum_challenge_test_bfp_05": "xsum_test",
-    "xsum_challenge_test_nopunc": "xsum_test",
-    "e2e_nlg_challenge_test_scramble": "e2e_nlg_test",
-    "web_nlg_en_challenge_test_scramble": "web_nlg_en_test",
-    "web_nlg_en_challenge_test_numbers": "web_nlg_en_test",
-    "wiki_auto_asset_turk_challenge_test_asset_backtranslation": "wiki_auto_asset_turk_test_asset",
-    "wiki_auto_asset_turk_challenge_test_asset_bfp02": "wiki_auto_asset_turk_test_asset",
-    "wiki_auto_asset_turk_challenge_test_asset_bfp05": "wiki_auto_asset_turk_test_asset",
-    "wiki_auto_asset_turk_challenge_test_asset_nopunc": "wiki_auto_asset_turk_test_asset",
-    "wiki_auto_asset_turk_challenge_test_turk_backtranslation": "wiki_auto_asset_turk_test_turk",
-    "wiki_auto_asset_turk_challenge_test_turk_bfp02": "wiki_auto_asset_turk_test_turk",
-    "wiki_auto_asset_turk_challenge_test_turk_bfp05": "wiki_auto_asset_turk_test_turk",
-    "wiki_auto_asset_turk_challenge_test_turk_nopunc": "wiki_auto_asset_turk_test_turk",
-}
-
-_CONTRAST_SET_BASE = [
-    "cs_restaurants_test",
-    "e2e_nlg_test",
-    "schema_guided_dialog_test",
-    "totto_test",
-    "xsum_test",
-    "web_nlg_en_test",
-    "web_nlg_ru_test",
-    "wiki_auto_asset_turk_test_asset",
-    "wiki_auto_asset_turk_test_turk",
-]
-
-_CONTRAST_SET_MATCHES = {
-    dataset_name: f"https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/{dataset_name}_contrast_sets.json"
-    for dataset_name in _CONTRAST_SET_BASE
-}
-
-_DATASET_REFERENCES_URLS = {
-    dataset_name: f"https://github.com/GEM-benchmark/GEM-metrics/releases/download/data/{dataset_name}.json"
-    for dataset_name in _SUPPORTED_DATASETS
-}
-# Fix val -> validation in download.
-for key, value in _DATASET_REFERENCES_URLS.items():
-    if key.endswith("val"):
-        _DATASET_REFERENCES_URLS[key] = value.replace("_val", "_validation")
-
-
 def load_references(dataset_name: str) -> Optional[References]:
     """Load a file with references for a standard GEM dataset (attempt download), return None if not present."""
-    if dataset_name in _DATASET_REFERENCES_URLS:
+    if dataset_name in get_all_datasets():
         try:
             dataset_file = ensure_download(
                 "references",
                 dataset_name + ".json",
-                _DATASET_REFERENCES_URLS[dataset_name],
+                get_url_for_dataset(dataset_name),
             )
-            return References(dataset_file, language=_SUPPORTED_DATASETS[dataset_name])
+            return References(dataset_file, language=get_language_for_dataset(dataset_name))
         except Exception as e:
             logger.warn(f"Could not format references for {dataset_name}: {str(e)}")
             traceback.print_tb(e.__traceback__)
@@ -377,34 +258,34 @@ def load_references(dataset_name: str) -> Optional[References]:
 
 def load_sources(dataset_name: str) -> Optional[References]:
     """Load a file with references for a standard GEM dataset (attempt download), return None if not present."""
-    if dataset_name in _DATASET_REFERENCES_URLS:
+    if dataset_name in get_all_datasets():
         try:
             dataset_file = ensure_download(
                 "references",
                 dataset_name + ".json",
-                _DATASET_REFERENCES_URLS[dataset_name],
+                get_url_for_dataset(dataset_name),
             )
-            return Sources(dataset_file, language=_SUPPORTED_DATASETS[dataset_name])
+            return Sources(dataset_file, language=get_language_for_dataset(dataset_name))
         except Exception as e:
             logger.info(f"{dataset_name} does not have source associated.")
             return None
     return None
 
 
-def load_contrast_set(dataset_name: str) -> Optional[Dict]:
-    if dataset_name in _CONTRAST_SET_MATCHES:
+def load_subpopulation_dataset(dataset_name: str) -> Optional[Dict]:
+    if dataset_name in get_all_subpopulation_sets():
         try:
             dataset_file = ensure_download(
                 "contrast_sets",
                 dataset_name + "_contrast_sets.json",
-                _CONTRAST_SET_MATCHES[dataset_name],
+                get_url_for_subpopulation(dataset_name),
             )
             with open(dataset_file) as f:
                 contrast_sets = json.load(f)
             return contrast_sets
         except Exception as e:
             logger.warn(f"Could not format contrast set for {dataset_name}: {str(e)}")
-            logger.warn(f"Looked for this file: {_CONTRAST_SET_MATCHES[dataset_name]}.")
+            logger.warn(f"Looked for this file: {get_url_for_subpopulation(dataset_name)}.")
             traceback.print_tb(e.__traceback__)
             return None
     return None
@@ -430,7 +311,7 @@ def process_files(config):
         parallel_metrics_list.append("bleurt")
         parallel_metrics_list.append("nubia")
         parallel_metrics_list.append("meteor")
-        # parallel_metrics_list.append("questeval")
+        parallel_metrics_list.append("questeval")
     serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
 
     # Optionally, set up cache.
@@ -452,24 +333,24 @@ def process_files(config):
 
     # multi-file submissions
     if isinstance(data, dict) and "submission_name" in data:
-        data = Submission(data, language_table=_SUPPORTED_DATASETS)
+        data = Submission(data)
 
         ref_data = {}
         if config.references_file:
             with open(config.references_file, encoding="UTF-8") as fh:
                 ref_data = json.load(fh)
-                for dataset in ref_data.keys():
-                    ref_data[dataset] = References(
-                        ref_data[dataset], language=_SUPPORTED_DATASETS[dataset]
+                for dataset_name in ref_data.keys():
+                    ref_data[dataset_name] = References(
+                        ref_data[dataset_name], language=get_language_for_dataset(dataset_name)
                     )
 
         src_data = {}
         if config.sources_file:
             with open(config.sources_file, encoding="UTF-8") as fh:
                 src_data = json.load(fh)
-                for dataset in src_data.keys():
-                    src_data[dataset] = Sources(
-                        src_data[dataset], language=_SUPPORTED_DATASETS[dataset]
+                for dataset_name in src_data.keys():
+                    src_data[dataset_name] = Sources(
+                        src_data[dataset_name], language=get_language_for_dataset(dataset_name)
                     )
 
         # Use default reference+source files if no custom ones are provided.
@@ -494,13 +375,13 @@ def process_files(config):
             if ref_data[dataset] is not None:
                 # And if the references have the parent_id set.
                 if ref_data[dataset].has_parent_ids:
-                    if dataset not in _CHALLENGE_SET_MATCHES:
+                    if dataset not in get_all_transformation_sets():
                         logger.info(
                             "Found parent ID in %s but no corresponding parent dataset"
                             % dataset
                         )
                         continue
-                    parent_dataset_name = _CHALLENGE_SET_MATCHES[dataset]
+                    parent_dataset_name = get_parent_dataset_for_transformation(dataset)
                     new_dataset_name = f"{dataset}_parent"
                     logger.info("Adding new subset dataset %s" % new_dataset_name)
                     # Construct new references.
@@ -516,9 +397,9 @@ def process_files(config):
         # Next construct the contrast sets. The files define a list of IDs we can
         # match on.
         for dataset in data.datasets:
-            if dataset in _CONTRAST_SET_MATCHES:
+            if dataset in get_all_subpopulation_sets():
                 # Assemble dictionary of all the subsets.
-                contrast_sets = load_contrast_set(dataset)
+                contrast_sets = load_subpopulation_dataset(dataset)
                 for set_name, subsets in contrast_sets.items():
                     for subset_name, id_list in subsets.items():
                         new_dataset_name = (

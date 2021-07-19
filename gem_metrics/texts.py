@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import functools
+from gem_metrics.config import get_language_for_dataset, get_task_type_for_dataset
 from typing import List, Optional
 import json
 import string
@@ -135,9 +136,9 @@ class Texts:
 class Predictions(Texts):
     """Data holder class for system outputs/predictions."""
 
-    def __init__(self, data, language="en"):
-        # Task is used in QuestEval metric to select correct model.
-        self.task = data.get("task", "agnostic")
+    def __init__(self, data, language="en", task="agnostic"):
+        # Task is used in QuestEval metric to select the correct model.
+        self.task = task
         super().__init__(data_key="generated", data=data, language=language)
 
 
@@ -162,7 +163,7 @@ class Sources(Texts):
 class Submission:
     """Data class for multiple submissions."""
 
-    def __init__(self, data, language_table):
+    def __init__(self, data):
         if isinstance(data, dict):
             self.all_data = data
         else:
@@ -174,12 +175,13 @@ class Submission:
         if not self.param_count:
             logger.warn("Model parameter count not present in the submission file.")
         self.entries = {}
-        for key, data in self.all_data["tasks"].items():
-            data["filename"] = self.name + "/" + key
+        for dataset_name, data in self.all_data["tasks"].items():
+            data["filename"] = self.name + "/" + dataset_name
             # Create Predictions with correct language - default to en.
             # Also change dashes to underscores since that is a common error.
-            self.entries[key.replace("-", "_")] = Predictions(
-                data, language=language_table.get(key, "en")
+            self.entries[dataset_name.replace("-", "_")] = Predictions(
+                data, language=get_language_for_dataset(dataset_name),
+                task=get_task_type_for_dataset(dataset_name)
             )
 
     def predictions_for(self, dataset_name: str) -> Optional[Predictions]:
