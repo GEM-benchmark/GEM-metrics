@@ -188,6 +188,7 @@ def process_submission(
     parallel_metric_dict: Dict[str, List],
     serial_metric_dict: Dict[str, List],
     cache: Optional[Cache] = None,
+    num_threads: Optional[int] = 12
 ) -> Dict:
     """Process a (potentially) multi-dataset submission. Expects a Submission object
     holding all the predictions, and potentially references and/or sources in a dictionary keyed by
@@ -220,7 +221,7 @@ def process_submission(
             (dataset, outs_ds, refs_ds, srcs_ds, parallel_metric_dict, cache)
         )
 
-    pool = Pool(processes=12)
+    pool = Pool(processes=num_threads)
     pool.starmap(multiprocess_compute, [x for x in job_args])
     pool.close()
     pool.join()
@@ -299,6 +300,7 @@ class Config:
     use_heavy_metrics: bool = False
     metric_list: list = None
     cache_folder: str = ""
+    num_threads: int = 12
 
 
 def process_files(config):
@@ -423,6 +425,7 @@ def process_files(config):
             parallel_metric_dict=parallel_metric_dict,
             serial_metric_dict=serial_metric_dict,
             cache=cache,
+            num_threads=config.num_threads
         )
 
     # Single-file mode.
@@ -517,6 +520,10 @@ def main():
             "If this argument is specified, it will point to the caching folder. "
         ),
     )
+    ap.add_argument(
+        "--num_threads", type=int, 
+        help="Number of threads that will be started in parallel.", default=12
+    )
     args = ap.parse_args()
 
     # Workaround for metrics that use cmd flags - write all args to config.
@@ -528,6 +535,7 @@ def main():
         use_heavy_metrics=args.heavy_metrics,
         metric_list=args.metric_list,
         cache_folder=args.cache_folder,
+        num_threads=args.num_threads
     )
 
     # hack to make BLEURT work -- it'll fail for anything in argv except the program name :-(
