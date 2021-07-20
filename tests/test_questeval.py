@@ -4,7 +4,6 @@ from tests.test_sourced_and_referenced import TestSourcedAndReferencedMetric
 
 
 class TestQuestEval(TestSourcedAndReferencedMetric, unittest.TestCase):
-
     def setUp(self):
         super().setUp()
         self.metric = gem_metrics.questeval.QuestEval()
@@ -14,5 +13,5 @@ class TestQuestEval(TestSourcedAndReferencedMetric, unittest.TestCase):
         self.true_results_empty_pred = {'questeval': {'f1': 0.0}}
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

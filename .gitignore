@@ -1,6 +1,14 @@
 .*.swp
+*.db
 __pycache__
+data/
+cache/
 gem_metrics/nltk_data
 gem_metrics/impl/data
 gem_metrics/impl/meteor-1.5.jar
 venv_gem
+nltk_data
+paraphrase-*.gz
+meteor-1.5.jar
+references
+*contrast_sets.json

@@ -22,11 +22,17 @@ class LocalRecall(ReferencedMetric):
     The advantage is that we don't have to rely on a part-of-speech tagger.
     """
 
-    def compute(self, predictions, references):
-        results = LocalRecall.local_recall_scores(predictions.list_tokenized_lower_nopunct,
-                                                  references.list_tokenized_lower_nopunct)
+    def support_caching(self):
+        # LocalRecall is corpus-level, so individual examples can't be aggregated.
+        return False
 
-        return {'local_recall': results}
+    def compute(self, cache, predictions, references):
+        results = LocalRecall.local_recall_scores(
+            predictions.list_tokenized_lower_nopunct,
+            references.list_tokenized_lower_nopunct,
+        )
+
+        return {"local_recall": results}
 
     @staticmethod
     def build_reference_index(refs):
@@ -56,17 +62,17 @@ class LocalRecall(ReferencedMetric):
         results = dict()
         for n in range(1, len(refs) + 1):
             overlap = pred_tokens & reference_index[n]
-            results[f'overlap-{n}'] = overlap
-            results[f'size-overlap-{n}'] = len(overlap)
-            results[f'refs-{n}'] = reference_index[n]
-            results[f'size-refs-{n}'] = len(reference_index[n])
+            results[f"overlap-{n}"] = overlap
+            results[f"size-overlap-{n}"] = len(overlap)
+            results[f"refs-{n}"] = reference_index[n]
+            results[f"size-refs-{n}"] = len(reference_index[n])
             # Just in case there are no words at all that occur in all references,
             # Make score equal to None to avoid divide by zero error.
             # This also avoids ambiguity between "no items recalled" and "no items to recall".
             if len(reference_index[n]) > 0:
-                results[f'item-score-{n}'] = len(overlap) / len(reference_index[n])
+                results[f"item-score-{n}"] = len(overlap) / len(reference_index[n])
             else:
-                results[f'item-score-{n}'] = None
+                results[f"item-score-{n}"] = None
         return results
 
     @staticmethod
@@ -98,7 +104,10 @@ class LocalRecall(ReferencedMetric):
             total_refs = len(refs)
             num_refs.add(total_refs)
             for n in range(1, total_refs + 1):
-                pair = (results[f'size-overlap-{n}'], results[f'size-refs-{n}'])
+                pair = (results[f"size-overlap-{n}"], results[f"size-refs-{n}"])
                 outcomes[n].append(pair)
-        scores = {n: LocalRecall.aggregate_score(outcomes[n]) for n in range(1, max(num_refs) + 1)}
+        scores = {
+            n: LocalRecall.aggregate_score(outcomes[n])
+            for n in range(1, max(num_refs) + 1)
+        }
         return scores

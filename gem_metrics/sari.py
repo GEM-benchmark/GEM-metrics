@@ -5,6 +5,7 @@ from collections import Counter
 import sacrebleu
 import sacremoses
 
+
 class SARI(SourceAndReferencedMetric):
     """SARI score for evaluating paraphrasing and other text generation models.
     The score is introduced in the following paper:
@@ -15,51 +16,52 @@ class SARI(SourceAndReferencedMetric):
     This implementation is adapted from Tensorflow's tensor2tensor implementation [3].
     It has two differences with the original GitHub [1] implementation:
       (1) Define 0/0=1 instead of 0 to give higher scores for predictions that match
-          a target exactly.
+        a target exactly.
       (2) Fix an alleged bug [2] in the keep score computation.
     [1] https://github.com/cocoxu/simplification/blob/master/SARI.py
-        (commit 0210f15)
+      (commit 0210f15)
     [2] https://github.com/cocoxu/simplification/issues/6
     [3] https://github.com/tensorflow/tensor2tensor/blob/master/tensor2tensor/utils/sari_hook.py
     """
 
-    def compute(self, predictions, references, sources):
+    def compute(self, cache, predictions, references, sources):
 
-        srcs = [
-            self.normalize(sent)
-            for sent in sources.untokenized
-        ]
-        preds = [
-            self.normalize(sent)
-            for sent in predictions.untokenized
-        ]
+        srcs = [self.normalize(sent) for sent in sources.untokenized]
+        preds = [self.normalize(sent) for sent in predictions.untokenized]
         refs = [
             [self.normalize(sent) for sent in ref_sents]
             for ref_sents in references.untokenized
         ]
 
-        sari_score = []
+        sari_scores = {}
         for i in range(len(srcs)):
-            sari_score.append(self.SARIsent(srcs[i], preds[i], refs[i]))
+            score = {"sari": self.SARIsent(srcs[i], preds[i], refs[i]) * 100}
+            sari_scores[predictions.ids[i]] = score
+            # Write to cache if not None.
+            if cache is not None:
+                cache_key = (
+                    self.__class__.__name__,
+                    predictions.filename,
+                    predictions.ids[i],
+                )
+                cache[cache_key] = score
 
-        return {'sari': 100. * (sum(sari_score)/len(sari_score))}
-
+        return sari_scores
 
     def SARIngram(self, sgrams, cgrams, rgramslist, numref):
         rgramsall = [rgram for rgrams in rgramslist for rgram in rgrams]
         rgramcounter = Counter(rgramsall)
-        
+
         sgramcounter = Counter(sgrams)
         sgramcounter_rep = Counter()
         for sgram, scount in sgramcounter.items():
             sgramcounter_rep[sgram] = scount * numref
-            
+
         cgramcounter = Counter(cgrams)
         cgramcounter_rep = Counter()
         for cgram, ccount in cgramcounter.items():
             cgramcounter_rep[cgram] = ccount * numref
-        
-        
+
         # KEEP
         keepgramcounter_rep = sgramcounter_rep & cgramcounter_rep
         keepgramcountergood_rep = keepgramcounter_rep & rgramcounter
@@ -68,24 +70,30 @@ class SARI(SourceAndReferencedMetric):
         keeptmpscore1 = 0
         keeptmpscore2 = 0
         for keepgram in keepgramcountergood_rep:
-            keeptmpscore1 += keepgramcountergood_rep[keepgram] / keepgramcounter_rep[keepgram]
+            keeptmpscore1 += (
+                keepgramcountergood_rep[keepgram] / keepgramcounter_rep[keepgram]
+            )
             # Fix an alleged bug [2] in the keep score computation.
-            #keeptmpscore2 += keepgramcountergood_rep[keepgram] / keepgramcounterall_rep[keepgram]
+            # keeptmpscore2 += keepgramcountergood_rep[keepgram] / keepgramcounterall_rep[keepgram]
             keeptmpscore2 += keepgramcountergood_rep[keepgram]
-        #Define 0/0=1 instead of 0 to give higher scores for predictions that match
-        #      a target exactly.
+        # Define 0/0=1 instead of 0 to give higher scores for predictions that match
+        #    a target exactly.
         keepscore_precision = 1
         keepscore_recall = 1
         if len(keepgramcounter_rep) > 0:
             keepscore_precision = keeptmpscore1 / len(keepgramcounter_rep)
         if len(keepgramcounterall_rep) > 0:
             # Fix an alleged bug [2] in the keep score computation.
-            #keepscore_recall = keeptmpscore2 / len(keepgramcounterall_rep)
+            # keepscore_recall = keeptmpscore2 / len(keepgramcounterall_rep)
             keepscore_recall = keeptmpscore2 / sum(keepgramcounterall_rep.values())
         keepscore = 0
         if keepscore_precision > 0 or keepscore_recall > 0:
-            keepscore = 2 * keepscore_precision * keepscore_recall / (keepscore_precision + keepscore_recall)
-
+            keepscore = (
+                2
+                * keepscore_precision
+                * keepscore_recall
+                / (keepscore_precision + keepscore_recall)
+            )
 
         # DELETION
         delgramcounter_rep = sgramcounter_rep - cgramcounter_rep
@@ -94,10 +102,14 @@ class SARI(SourceAndReferencedMetric):
         deltmpscore1 = 0
         deltmpscore2 = 0
         for delgram in delgramcountergood_rep:
-            deltmpscore1 += delgramcountergood_rep[delgram] / delgramcounter_rep[delgram]
-            deltmpscore2 += delgramcountergood_rep[delgram] / delgramcounterall_rep[delgram]
-        #Define 0/0=1 instead of 0 to give higher scores for predictions that match
-        #      a target exactly.
+            deltmpscore1 += (
+                delgramcountergood_rep[delgram] / delgramcounter_rep[delgram]
+            )
+            deltmpscore2 += (
+                delgramcountergood_rep[delgram] / delgramcounterall_rep[delgram]
+            )
+        # Define 0/0=1 instead of 0 to give higher scores for predictions that match
+        #    a target exactly.
         delscore_precision = 1
         delscore_recall = 1
         if len(delgramcounter_rep) > 0:
@@ -106,8 +118,12 @@ class SARI(SourceAndReferencedMetric):
             delscore_recall = deltmpscore1 / len(delgramcounterall_rep)
         delscore = 0
         if delscore_precision > 0 or delscore_recall > 0:
-            delscore = 2 * delscore_precision * delscore_recall / (delscore_precision + delscore_recall)
-
+            delscore = (
+                2
+                * delscore_precision
+                * delscore_recall
+                / (delscore_precision + delscore_recall)
+            )
 
         # ADDITION
         addgramcounter = set(cgramcounter) - set(sgramcounter)
@@ -118,8 +134,8 @@ class SARI(SourceAndReferencedMetric):
         for addgram in addgramcountergood:
             addtmpscore += 1
 
-        #Define 0/0=1 instead of 0 to give higher scores for predictions that match
-        #      a target exactly.
+        # Define 0/0=1 instead of 0 to give higher scores for predictions that match
+        #    a target exactly.
         addscore_precision = 1
         addscore_recall = 1
         if len(addgramcounter) > 0:
@@ -128,12 +144,17 @@ class SARI(SourceAndReferencedMetric):
             addscore_recall = addtmpscore / len(addgramcounterall)
         addscore = 0
         if addscore_precision > 0 or addscore_recall > 0:
-            addscore = 2 * addscore_precision * addscore_recall / (addscore_precision + addscore_recall)
-        
+            addscore = (
+                2
+                * addscore_precision
+                * addscore_recall
+                / (addscore_precision + addscore_recall)
+            )
+
         return (keepscore, delscore_precision, addscore)
 
-    def SARIsent (self, ssent, csent, rsents) :
-        numref = len(rsents)    
+    def SARIsent(self, ssent, csent, rsents):
+        numref = len(rsents)
 
         s1grams = ssent.split(" ")
         c1grams = csent.split(" ")
@@ -143,7 +164,7 @@ class SARI(SourceAndReferencedMetric):
         c3grams = []
         s4grams = []
         c4grams = []
-     
+
         r1gramslist = []
         r2gramslist = []
         r3gramslist = []
@@ -154,54 +175,91 @@ class SARI(SourceAndReferencedMetric):
             r3grams = []
             r4grams = []
             r1gramslist.append(r1grams)
-            for i in range(0, len(r1grams)-1) :
+            for i in range(0, len(r1grams) - 1):
                 if i < len(r1grams) - 1:
-                    r2gram = r1grams[i] + " " + r1grams[i+1]
+                    r2gram = r1grams[i] + " " + r1grams[i + 1]
                     r2grams.append(r2gram)
-                if i < len(r1grams)-2:
-                    r3gram = r1grams[i] + " " + r1grams[i+1] + " " + r1grams[i+2]
+                if i < len(r1grams) - 2:
+                    r3gram = r1grams[i] + " " + r1grams[i + 1] + " " + r1grams[i + 2]
                     r3grams.append(r3gram)
-                if i < len(r1grams)-3:
-                    r4gram = r1grams[i] + " " + r1grams[i+1] + " " + r1grams[i+2] + " " + r1grams[i+3]
-                    r4grams.append(r4gram)        
+                if i < len(r1grams) - 3:
+                    r4gram = (
+                        r1grams[i]
+                        + " "
+                        + r1grams[i + 1]
+                        + " "
+                        + r1grams[i + 2]
+                        + " "
+                        + r1grams[i + 3]
+                    )
+                    r4grams.append(r4gram)
             r2gramslist.append(r2grams)
             r3gramslist.append(r3grams)
             r4gramslist.append(r4grams)
-           
-        for i in range(0, len(s1grams)-1) :
+
+        for i in range(0, len(s1grams) - 1):
             if i < len(s1grams) - 1:
-                s2gram = s1grams[i] + " " + s1grams[i+1]
+                s2gram = s1grams[i] + " " + s1grams[i + 1]
                 s2grams.append(s2gram)
-            if i < len(s1grams)-2:
-                s3gram = s1grams[i] + " " + s1grams[i+1] + " " + s1grams[i+2]
+            if i < len(s1grams) - 2:
+                s3gram = s1grams[i] + " " + s1grams[i + 1] + " " + s1grams[i + 2]
                 s3grams.append(s3gram)
-            if i < len(s1grams)-3:
-                s4gram = s1grams[i] + " " + s1grams[i+1] + " " + s1grams[i+2] + " " + s1grams[i+3]
+            if i < len(s1grams) - 3:
+                s4gram = (
+                    s1grams[i]
+                    + " "
+                    + s1grams[i + 1]
+                    + " "
+                    + s1grams[i + 2]
+                    + " "
+                    + s1grams[i + 3]
+                )
                 s4grams.append(s4gram)
-                
-        for i in range(0, len(c1grams)-1) :
+
+        for i in range(0, len(c1grams) - 1):
             if i < len(c1grams) - 1:
-                c2gram = c1grams[i] + " " + c1grams[i+1]
+                c2gram = c1grams[i] + " " + c1grams[i + 1]
                 c2grams.append(c2gram)
-            if i < len(c1grams)-2:
-                c3gram = c1grams[i] + " " + c1grams[i+1] + " " + c1grams[i+2]
+            if i < len(c1grams) - 2:
+                c3gram = c1grams[i] + " " + c1grams[i + 1] + " " + c1grams[i + 2]
                 c3grams.append(c3gram)
-            if i < len(c1grams)-3:
-                c4gram = c1grams[i] + " " + c1grams[i+1] + " " + c1grams[i+2] + " " + c1grams[i+3]
+            if i < len(c1grams) - 3:
+                c4gram = (
+                    c1grams[i]
+                    + " "
+                    + c1grams[i + 1]
+                    + " "
+                    + c1grams[i + 2]
+                    + " "
+                    + c1grams[i + 3]
+                )
                 c4grams.append(c4gram)
 
-
-        (keep1score, del1score, add1score) = self.SARIngram(s1grams, c1grams, r1gramslist, numref)
-        (keep2score, del2score, add2score) = self.SARIngram(s2grams, c2grams, r2gramslist, numref)
-        (keep3score, del3score, add3score) = self.SARIngram(s3grams, c3grams, r3gramslist, numref)
-        (keep4score, del4score, add4score) = self.SARIngram(s4grams, c4grams, r4gramslist, numref)
-        avgkeepscore = sum([keep1score,keep2score,keep3score,keep4score])/4
-        avgdelscore = sum([del1score,del2score,del3score,del4score])/4
-        avgaddscore = sum([add1score,add2score,add3score,add4score])/4
-        finalscore = (avgkeepscore + avgdelscore + avgaddscore ) / 3
+        (keep1score, del1score, add1score) = self.SARIngram(
+            s1grams, c1grams, r1gramslist, numref
+        )
+        (keep2score, del2score, add2score) = self.SARIngram(
+            s2grams, c2grams, r2gramslist, numref
+        )
+        (keep3score, del3score, add3score) = self.SARIngram(
+            s3grams, c3grams, r3gramslist, numref
+        )
+        (keep4score, del4score, add4score) = self.SARIngram(
+            s4grams, c4grams, r4gramslist, numref
+        )
+        avgkeepscore = sum([keep1score, keep2score, keep3score, keep4score]) / 4
+        avgdelscore = sum([del1score, del2score, del3score, del4score]) / 4
+        avgaddscore = sum([add1score, add2score, add3score, add4score]) / 4
+        finalscore = (avgkeepscore + avgdelscore + avgaddscore) / 3
         return finalscore
 
-    def normalize(self, sentence, lowercase: bool = True, tokenizer: str = '13a', return_str: bool = True):
+    def normalize(
+        self,
+        sentence,
+        lowercase: bool = True,
+        tokenizer: str = "13a",
+        return_str: bool = True,
+    ):
 
         # Normalization is requried for the ASSET dataset to allow using space
         # to split the sentence. Even though Wiki-Auto and TURK datasets,
@@ -212,12 +270,16 @@ class SARI(SourceAndReferencedMetric):
         if lowercase:
             sentence = sentence.lower()
 
-        if tokenizer in ['13a', 'intl']:
+        if tokenizer in ["13a", "intl"]:
             normalized_sent = sacrebleu.TOKENIZERS[tokenizer]()(sentence)
-        elif tokenizer == 'moses':
-            normalized_sent = sacremoses.MosesTokenizer().tokenize(sentence, return_str=True, escape=False)
-        elif tokenizer == 'penn':
-            normalized_sent = sacremoses.MosesTokenizer().penn_tokenize(sentence, return_str=True)
+        elif tokenizer == "moses":
+            normalized_sent = sacremoses.MosesTokenizer().tokenize(
+                sentence, return_str=True, escape=False
+            )
+        elif tokenizer == "penn":
+            normalized_sent = sacremoses.MosesTokenizer().penn_tokenize(
+                sentence, return_str=True
+            )
         else:
             normalized_sent = sentence
 
@@ -225,5 +287,3 @@ class SARI(SourceAndReferencedMetric):
             normalized_sent = normalized_sent.split()
 
         return normalized_sent
-
-
