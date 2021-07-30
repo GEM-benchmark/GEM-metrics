@@ -23,6 +23,8 @@ class Texts:
             with open(data, "r", encoding="UTF-8") as fh:
                 data = json.load(fh)
                 self.all_data = data
+            if isinstance(data, dict) and "values" in data:
+                self.all_data = data["values"]
         else:
             self.filename = data.get("filename")
             self.all_data = data["values"]
@@ -110,7 +112,7 @@ class Texts:
         Args:
             id_list: ordered ID list of the associated reference file.
         """
-        if not self.ids is None:
+        if self.ids is not None and id_list is not None:
             # Is the ID list set, but in a different order?
             if self.ids != id_list:
                 logger.info(
@@ -127,7 +129,11 @@ class Texts:
         else:
             # In this case we simply assume that the predictions were in order.
             # There is no other way to test for this.
-            self.ids = id_list
+            if id_list is not None:
+                self.ids = id_list
+            # when everything is None, we just make caching work
+            elif self.ids is None:
+                self.ids = ["generated-%05d" % i for i in range(len(self))]
 
     def __len__(self):
         return len(self.data)
@@ -140,6 +146,8 @@ class Predictions(Texts):
         # Task is used in QuestEval metric to select the correct model.
         self.task = task
         super().__init__(data_key="generated", data=data, language=language)
+        #if self.ids is None:
+        #    self.ids = ["unk-%05d" % i for i in range(len(self))]
 
 
 class References(Texts):
