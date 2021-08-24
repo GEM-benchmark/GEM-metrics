@@ -18,8 +18,8 @@ class QuestEval(SourceAndReferencedMetric):
         )
 
     def support_caching(self):
-        # We are using corpus-level QuestEval. 
-        return False
+        # We are using corpus-level QuestEval which is aggregated. 
+        return True
 
     def compute(self, cache, predictions, references, sources):
         # If task or language is different, we must change QA / QG models for questeval
