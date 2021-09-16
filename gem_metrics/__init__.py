@@ -3,7 +3,7 @@
 from argparse import ArgumentParser
 from copy import copy
 from dataclasses import dataclass
-from gem_metrics.config import (get_all_datasets, get_language_for_dataset, 
+from gem_metrics.config import (get_all_datasets, get_language_for_dataset,
                                 get_url_for_dataset, get_all_transformation_sets,
                                 get_parent_dataset_for_transformation,
                                 get_all_subpopulation_sets,
@@ -431,8 +431,8 @@ def process_files(config):
     # Single-file mode.
     else:
         outs = Predictions(data)
-        srcs = {}
-        refs = {}
+        srcs = None
+        refs = None
 
         # load references, if available
         if config.references_file is not None:
@@ -521,7 +521,7 @@ def main():
         ),
     )
     ap.add_argument(
-        "--num_threads", type=int, 
+        "--num_threads", type=int,
         help="Number of threads that will be started in parallel.", default=12
     )
     args = ap.parse_args()
