@@ -40,6 +40,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "bertscore": "BERTScore",
         "bleu": "BLEU",
         "bleurt": "BLEURT",
+        "chrf": "CHRF",
         "local_recall": "LocalRecall",
         "meteor": "Meteor",
         "nist": "NIST",
@@ -493,6 +494,7 @@ def main():
         default=[
             "bleu",
             "rouge",
+            "chrf",
             "nist",
             "msttr",
             "ngrams",
