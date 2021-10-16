@@ -7,7 +7,7 @@ class TestBertScore(TestReferencedMetric, unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.metric = gem_metrics.bertscore.BERTScore()
-        self.metrics_keys_to_ignore = {"bertscore": ["hashcode"]}
+        self.metric._initialize()
         self.true_results_basic = {
             "bertscore": {
                 "precision": 0.9004354476928711,

@@ -58,7 +58,7 @@ class QuestEval(SourceAndReferencedMetric):
 
         formatted_scores = {}
         for sc, pred_id in zip(scores['ex_level_scores'], predictions.ids):
-            formatted_score = {"questeval": sc}
+            formatted_score = {"questeval": float(sc)}
             formatted_scores[pred_id] = formatted_score
             if cache is not None:
                 cache_key = (self.__class__.__name__, predictions.filename, pred_id)
