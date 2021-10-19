@@ -270,20 +270,23 @@ class SARI(SourceAndReferencedMetric):
         if lowercase:
             sentence = sentence.lower()
 
-        if tokenizer in ["13a", "intl"]:
-            normalized_sent = sacrebleu.TOKENIZERS[tokenizer]()(sentence)
+        sentence = self.tokenize(sentence, tokenizer)
+
+        if not return_str:
+            sentence = sentence.split()
+
+        return sentence
+
+    def tokenize(self, sentence, tokenizer):
+        if tokenizer in ["intl", "13"]:
+            sentence = sacrebleu.metrics.bleu._get_tokenizer(tokenizer)()(sentence)
         elif tokenizer == "moses":
-            normalized_sent = sacremoses.MosesTokenizer().tokenize(
+            sentence = sacremoses.MosesTokenizer().tokenize(
                 sentence, return_str=True, escape=False
             )
         elif tokenizer == "penn":
-            normalized_sent = sacremoses.MosesTokenizer().penn_tokenize(
+            sentence = sacremoses.MosesTokenizer().penn_tokenize(
                 sentence, return_str=True
             )
-        else:
-            normalized_sent = sentence
 
-        if not return_str:
-            normalized_sent = normalized_sent.split()
-
-        return normalized_sent
+        return sentence
