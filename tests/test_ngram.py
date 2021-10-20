@@ -59,7 +59,7 @@ class TestNGram(TestReferenceLessMetric, unittest.TestCase):
             "cond_entropy-3-nopunct": -0.04644297947538351,
         }
 
-        calculated_metrics = self.ngram_metric.compute(TestData.predictions)
+        calculated_metrics = self.ngram_metric.compute({}, TestData.predictions)
         assertDeepAlmostEqual(self, expected_metrics, calculated_metrics)
 
     def test_ngram_metric_empty(self):
@@ -106,6 +106,7 @@ class TestNGram(TestReferenceLessMetric, unittest.TestCase):
         }
 
         calculated_metrics = self.ngram_metric.compute(
+            {},
             Predictions({"values": text, "language": "en"})
         )
 
@@ -159,6 +160,7 @@ class TestNGram(TestReferenceLessMetric, unittest.TestCase):
         }
 
         calculated_metrics = self.ngram_metric.compute(
+            {},
             Predictions({"values": text, "language": "en"})
         )
         assertDeepAlmostEqual(self, expected_metrics, calculated_metrics)
@@ -211,6 +213,7 @@ class TestNGram(TestReferenceLessMetric, unittest.TestCase):
         }
 
         calculated_metrics = self.ngram_metric.compute(
+            {},
             Predictions({"values": text, "language": "en"})
         )
         assertDeepAlmostEqual(self, expected_metrics, calculated_metrics)
