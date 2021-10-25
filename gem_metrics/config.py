@@ -19,7 +19,7 @@ from gem_metrics import data
 
 
 _SUPPORTED_DATASETS = {
-    "common_gen_val": {"language": "cs", "task": "data2text"},
+    "common_gen_val": {"language": "en", "task": "data2text"},
     "common_gen_test": {"language": "en", "task": "data2text"},
     "common_gen_challenge_test_scramble": {"language": "en", "task": "data2text"},
     "common_gen_challenge_train_sample": {"language": "en", "task": "data2text"},

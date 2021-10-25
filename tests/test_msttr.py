@@ -18,11 +18,11 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
     def test_msttr_metric_basic(self):
         """Tests for the base case."""
         expected_metrics = {
-            "msttr-4": 0.888235294117647,
-            "msttr-4_nopunct": 0.9333333333333332,
+            "msttr-4": round(0.888235294117647, 5),
+            "msttr-4_nopunct": round(0.9333333333333332, 5),
         }
 
-        calculated_metrics = self.metric.compute(TestData.predictions)
+        calculated_metrics = self.metric.compute({}, TestData.predictions)
 
         assertDeepAlmostEqual(self, expected_metrics, calculated_metrics)
 
@@ -31,6 +31,7 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
         text = ["", ""]
 
         calculated_metrics = self.metric.compute(
+            {},
             Predictions({"values": text, "language": "en"})
         )
 
@@ -48,9 +49,9 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
         for window_size in range(1, 11):
             metric = MSTTR(window_size=window_size)
             calculated_metrics = metric.compute(
+                {},
                 Predictions({"values": text, "language": "en"})
             )
-            print(calculated_metrics)
             self.assertAlmostEquals(calculated_metrics[f"msttr-{window_size}"], 1)
 
     def test_msttr_identical_tokens(self):
@@ -65,6 +66,7 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
         for window_size in range(1, 11):
             metric = MSTTR(window_size=window_size)
             calculated_metrics = metric.compute(
+                {},
                 Predictions({"values": text, "language": "en"})
             )
             self.assertAlmostEqual(

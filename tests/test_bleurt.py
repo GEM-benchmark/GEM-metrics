@@ -10,6 +10,7 @@ class TestBluert(TestReferencedMetric, unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.metric = gem_metrics.bleurt.BLEURT()
+        self.metric._initialize()
         self.true_results_basic = {"bleurt": -0.018821040789286297}
         self.true_results_identical_pred_ref = {"bleurt": 0.941490113735199}
         self.true_results_mismatched_pred_ref = {"bleurt": -1.2387781937917073}
