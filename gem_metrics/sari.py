@@ -278,7 +278,7 @@ class SARI(SourceAndReferencedMetric):
         return sentence
 
     def tokenize(self, sentence, tokenizer):
-        if tokenizer in ["intl", "13"]:
+        if tokenizer in ["intl", "13a"]:
             sentence = sacrebleu.metrics.bleu._get_tokenizer(tokenizer)()(sentence)
         elif tokenizer == "moses":
             sentence = sacremoses.MosesTokenizer().tokenize(
