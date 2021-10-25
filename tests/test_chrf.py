@@ -9,8 +9,8 @@ class TestCHRF(TestReferencedMetric, unittest.TestCase):
         self.metric = gem_metrics.chrf.CHRF()
         self.true_results_basic = {
             "chrf": 63.61553,
-            "chrf+": 63.42195,
-            "chrf++": 60.06576
+            "chrf+": 63.40982,
+            "chrf++": 60.0482
         }
         self.true_results_identical_pred_ref = {
             "chrf": 100.0,

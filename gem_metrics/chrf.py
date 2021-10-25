@@ -22,7 +22,8 @@ class CHRF(ReferencedMetric):
             chrf = sacrebleu.corpus_chrf(
                 predictions.untokenized, 
                 ref_streams,
-                word_order=word_order
+                word_order=word_order,
+                eps_smoothing=True
             )
             scores[key] = round(chrf.score, 5)
 
