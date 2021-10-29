@@ -37,6 +37,11 @@ Where `<script>` is either `./run_metrics.py` (if you created a checkout) or `ge
 
 See [`test_data`](test_data/) for example JSON file formats.
 
+For calculating basic metrics with the unit test data, run:
+```
+./run_metrics.py -s test_data/unit_tests/sources.json  -r test_data/unit_tests/references.json test_data/unit_tests/predictions.json
+```
+
 Use `./run_metrics.py -h` to see all available options.
 
 By default, the “heavy” metrics (BERTScore, BLEURT, NUBIA and QuestEval) aren't computed. Use `--heavy-metrics` to compute them.
