@@ -53,12 +53,14 @@ class Texts:
         # tokenize & keep a list and a whitespace version
         self.tokenize_func = default_tokenize_func(self.language)
 
-    @functools.cached_property
+    @property
+    @functools.lru_cache()
     def untokenized(self):
         """Return list of (lists of) untokenized strings."""
         return self.data
 
-    @functools.cached_property
+    @property
+    @functools.lru_cache()
     def _tokenized(self):
         """Return list of (lists of) untokenized strings."""
         if self.multi_ref:
@@ -66,7 +68,8 @@ class Texts:
         else:
             return [self.tokenize_func(ref) for ref in self.data]
 
-    @functools.cached_property
+    @property
+    @functools.lru_cache()
     def whitespace_tokenized(self):
         """Return list of (lists of) tokenized strings (tokens separated by space)."""
         if self.multi_ref:
@@ -74,12 +77,14 @@ class Texts:
         else:
             return [" ".join(ref) for ref in self._tokenized]
 
-    @functools.cached_property
+    @property
+    @functools.lru_cache()
     def list_tokenized(self):
         """Return list of (lists of) lists of tokens."""
         return self._tokenized
 
-    @functools.cached_property
+    @property
+    @functools.lru_cache()
     def list_tokenized_lower(self):
         """Return list of (lists of) lists of tokens, lowercased."""
         if self.multi_ref:
@@ -89,7 +94,8 @@ class Texts:
         else:
             return [[w.lower() for w in ref] for ref in self._tokenized]
 
-    @functools.cached_property
+    @property
+    @functools.lru_cache()
     def list_tokenized_lower_nopunct(self):
         """Return list of (lists of) lists of tokens, lowercased, excluding punctuation."""
         if self.multi_ref:
