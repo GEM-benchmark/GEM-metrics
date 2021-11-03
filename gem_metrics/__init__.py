@@ -234,8 +234,10 @@ def process_submission(
         outs_ds = outs.predictions_for(dataset)
         refs_ds = refs.get(dataset, None)
         srcs_ds = srcs.get(dataset, None)
-        shared_dict[dataset] = shared_dict[dataset] | compute(
-            outs_ds, refs_ds, srcs_ds, serial_metric_dict, cache, dataset
+        shared_dict[dataset].update(
+            compute(
+                outs_ds, refs_ds, srcs_ds, serial_metric_dict, cache, dataset
+            )
         )
 
     return dict(shared_dict)

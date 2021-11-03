@@ -86,7 +86,8 @@ class AbstractMetric:
 
         if self.support_caching():
             # Combine them back and reshuffle.
-            scores = cached_scores | computed_scores
+            cached_scores.update(computed_scores)
+            scores = cached_scores
             scores_ordered = [scores[pred_id] for pred_id in original_order]
             # Aggregate individual scores.
             aggregated_score = self._aggregate_scores(scores_ordered)
