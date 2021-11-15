@@ -17,9 +17,11 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
 
     def test_msttr_metric_basic(self):
         """Tests for the base case."""
+        # for window size 4, the test data has only segments with unique tokens
+        self.metric.window_size = 12
         expected_metrics = {
-            "msttr-4": round(0.888235294117647, 5),
-            "msttr-4_nopunct": round(0.9333333333333332, 5),
+            "msttr-12": 0.875,
+            "msttr-12_nopunct": 0.91667,
         }
 
         calculated_metrics = self.metric.compute({}, TestData.predictions)
@@ -44,7 +46,7 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
         """
         text = [
             "one two three four five six seven eight nine ten",
-            "one two three four five six seven eight nine ten",
+            "eleven twelve thirteen fourteen fifteen sixteen",
         ]
         for window_size in range(1, 11):
             metric = MSTTR(window_size=window_size)
@@ -59,9 +61,8 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
         As the tokens are identical, the MSTTR with window size w should be 1 / w (there is only one _type_ of token)
         """
         text = [
-            "token token token token token token token token token token",
-            "token token token token token token token token token token",
-            "token token token token token token token token token token",
+            "token token token token token token token token token token token token token",
+            "token token token token token token token token token token token token token",
         ]
         for window_size in range(1, 11):
             metric = MSTTR(window_size=window_size)
@@ -70,7 +71,7 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
                 Predictions({"values": text, "language": "en"})
             )
             self.assertAlmostEqual(
-                calculated_metrics[f"msttr-{window_size}"], 1 / window_size
+                calculated_metrics[f"msttr-{window_size}"], round(1 / window_size, 5)
             )
 
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import itertools
 
 from string import punctuation
 from nltk import ngrams
@@ -46,24 +47,23 @@ class MSTTR(ReferencelessMetric):
         return len(set(list_of_words)) / len(list_of_words)
 
     def _MSTTR(self, tokenized_data, window_size):
-        "Compute Mean-Segmental Type-Token Ratio (MSTTR; Johnson, 1944)."
-        chunk = []
+        """
+        Computes Mean-Segmental Type-Token Ratio (MSTTR; Johnson, 1944)
+        by dividing the concatenated texts into non-overlapping segments of equal
+        size and then averaging the TTRs of the segments.
+        The last segment is excluded from the computation if it is smaller than
+        the window size.
+        """
         ttrs = []
-        for sentence in tokenized_data:
-            chunk_length = len(chunk)
-            sentence_length = len(sentence)
-            combined = chunk_length + sentence_length
-            if combined < window_size:
-                chunk.extend(sentence)
-            elif combined == window_size:
-                chunk.extend(sentence)
-                ttrs.append(self._TTR(chunk))
-                chunk = []
-            else:
-                needed = window_size - chunk_length
-                chunk.extend(sentence[:needed])
-                ttrs.append(self._TTR(chunk))
-                chunk = sentence[needed:]
+        concatenated = list(itertools.chain.from_iterable(tokenized_data))
+        
+        for i in range(0, len(concatenated), window_size):
+            window = concatenated[i: i+window_size]
+            # removes the last segment from the computation
+            if len(window) < window_size:
+                break
+            ttrs.append(self._TTR(window))
+
         results = {
             "msttr_value": sum(ttrs) / len(ttrs) if ttrs else float("nan"),
             "num_ttrs": len(ttrs),
