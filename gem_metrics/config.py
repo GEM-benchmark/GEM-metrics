@@ -117,7 +117,7 @@ for dataset_name, settings in _SUPPORTED_DATASETS.items():
         sanitized_dataset_name = dataset_name.replace("_val", "_validation")
     else:    
         sanitized_dataset_name = dataset_name
-    settings['url'] = f"https://huggingface.co/datasets/lewtun/gem-references/resolve/main/{sanitized_dataset_name}.json"
+    settings['url'] = f"https://huggingface.co/datasets/GEM/references/resolve/main/{sanitized_dataset_name}.json"
 
 # If you want to add a custom dataset / url, you can add it here.
 # Just ensure that your entry has `language`, `task`, and `url` set.
