@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+from .texts import Predictions, References, Sources
+
 from copy import copy
 import numpy as np
-from typing import List
+from typing import List, Dict
 from logzero import logger
 
 
@@ -47,7 +49,7 @@ class AbstractMetric:
                 "Please add to this function an aggregator for your data format."
             )
 
-    def compute_cached(self, cache, predictions, *args):
+    def compute_cached(self, cache, predictions: Predictions, *args):
         """Loops through the predictions to check for cache hits before computing."""
         original_order = copy(predictions.ids)
 
@@ -100,19 +102,19 @@ class AbstractMetric:
 class ReferencelessMetric(AbstractMetric):
     """Base class for all referenceless metrics."""
 
-    def compute(self, cache, predictions):
+    def compute(self, cache, predictions: Predictions) -> Dict:
         raise NotImplementedError
 
 
 class ReferencedMetric(AbstractMetric):
     """Base class for all referenced metrics."""
 
-    def compute(self, cache, predictions, references):
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         raise NotImplementedError
 
 
 class SourceAndReferencedMetric(AbstractMetric):
     """Base class for all metrics that require source and reference sentences."""
 
-    def compute(self, cache, predictions, references, sources):
+    def compute(self, cache, predictions: Predictions, references: References, sources: Sources) -> Dict:
         raise NotImplementedError

@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
-import itertools
-
-from string import punctuation
-from nltk import ngrams
-import random
-
 from .metric import ReferencelessMetric
+from .texts import Predictions
+
+import itertools
+import random
+from typing import Dict, List
 
 
 class MSTTR(ReferencelessMetric):
@@ -17,7 +16,7 @@ class MSTTR(ReferencelessMetric):
     https://github.com/evanmiltenburg/NLG-diversity/blob/main/diversity.py
     """
 
-    def __init__(self, window_size=100):
+    def __init__(self, window_size: int = 100):
         # use MSTTR-100 by default.
         self.rnd = random.Random(1234)
         self.window_size = window_size
@@ -26,7 +25,7 @@ class MSTTR(ReferencelessMetric):
         # MSTTR is corpus-level, so individual examples can't be aggregated.
         return False
 
-    def compute(self, cache, predictions):
+    def compute(self, cache, predictions: Predictions) -> Dict:
         return {
             f"msttr-{self.window_size}": round(
                 self._MSTTR(predictions.list_tokenized_lower, self.window_size)[
@@ -42,11 +41,11 @@ class MSTTR(ReferencelessMetric):
             ),
         }
 
-    def _TTR(self, list_of_words):
+    def _TTR(self, list_of_words: List[str]) -> float:
         "Compute type-token ratio."
         return len(set(list_of_words)) / len(list_of_words)
 
-    def _MSTTR(self, tokenized_data, window_size):
+    def _MSTTR(self, tokenized_data: List[List[str]], window_size: int) -> Dict:
         """
         Computes Mean-Segmental Type-Token Ratio (MSTTR; Johnson, 1944)
         by dividing the concatenated texts into non-overlapping segments of equal
@@ -56,7 +55,7 @@ class MSTTR(ReferencelessMetric):
         """
         ttrs = []
         concatenated = list(itertools.chain.from_iterable(tokenized_data))
-        
+
         for i in range(0, len(concatenated), window_size):
             window = concatenated[i: i+window_size]
             # removes the last segment from the computation
@@ -71,7 +70,7 @@ class MSTTR(ReferencelessMetric):
         }
         return results
 
-    def _repeated_MSTTR(self, tokenized_data, window_size, repeats=5):
+    def _repeated_MSTTR(self, tokenized_data: List[List[str]], window_size: int, repeats: int = 5) -> float:
         "Repeated MSTTR to obtain a more robust MSTTR value."
         msttrs = []
         for i in range(repeats):

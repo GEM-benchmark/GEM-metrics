@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
+from .data import nltk_ensure_download
 
+from typing import List
 import re
 from functools import partial
 import nltk
-from .data import nltk_ensure_download
 
 
-def default_tokenize_func(lang):
+def default_tokenize_func(lang: str):
     """Return the default tokenizer function for a given language (Punkt, backoff to dumb_tokenize).
     @param lang: pycountry.db.Language object representing the language (result of pycountry.languages.get)
     @return tokenizer function, taking one parameter (text) and returning list of tokens.
@@ -24,7 +25,7 @@ def default_tokenize_func(lang):
     return func
 
 
-def dumb_tokenize(text):
+def dumb_tokenize(text: str) -> List[str]:
     """Tokenize text (separate tokens by spaces), language-agnostic failsafe version.
     @param text: String to be tokenized
     @return list of tokens

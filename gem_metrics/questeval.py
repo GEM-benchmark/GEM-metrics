@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-
 from .metric import SourceAndReferencedMetric
+from .texts import Predictions, References, Sources
+
+from typing import Dict
 from questeval.questeval_metric import QuestEval as QuestEvalMetric
 from logzero import logger
 
@@ -21,7 +23,7 @@ class QuestEval(SourceAndReferencedMetric):
         # We are using corpus-level QuestEval which is aggregated. 
         return True
 
-    def compute(self, cache, predictions, references, sources):
+    def compute(self, cache, predictions: Predictions, references: References, sources: Sources) -> Dict:
         # If task or language is different, we must change QA / QG models for questeval
         if predictions.task != self.task or predictions.language.alpha_2 != self.language:
             self.task = predictions.task

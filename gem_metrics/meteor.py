@@ -2,6 +2,9 @@
 
 from .metric import ReferencedMetric
 from .impl.meteor import PyMeteorWrapper
+from .texts import Predictions, References
+
+from typing import Dict
 from logzero import logger
 
 
@@ -14,7 +17,7 @@ class Meteor(ReferencedMetric):
         # While individual scores can be computed, the overall score is different.
         return False
 
-    def compute(self, cache, predictions, references):
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         try:
             m = PyMeteorWrapper(predictions.language.alpha_2)
         except Exception as e:

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-
+from .texts import Predictions, References, Sources
 from .metric import SourceAndReferencedMetric
+
+from typing import Dict, Tuple, List
 from collections import Counter
 import sacrebleu
 import sacremoses
@@ -24,7 +26,7 @@ class SARI(SourceAndReferencedMetric):
     [3] https://github.com/tensorflow/tensor2tensor/blob/master/tensor2tensor/utils/sari_hook.py
     """
 
-    def compute(self, cache, predictions, references, sources):
+    def compute(self, cache, predictions: Predictions, references: References, sources: Sources) -> Dict:
 
         srcs = [self.normalize(sent) for sent in sources.untokenized]
         preds = [self.normalize(sent) for sent in predictions.untokenized]
@@ -48,7 +50,7 @@ class SARI(SourceAndReferencedMetric):
 
         return sari_scores
 
-    def SARIngram(self, sgrams, cgrams, rgramslist, numref):
+    def SARIngram(self, sgrams: List[str], cgrams: List[str], rgramslist: List[List[str]], numref: int) -> Tuple[float, float, float]:
         rgramsall = [rgram for rgrams in rgramslist for rgram in rgrams]
         rgramcounter = Counter(rgramsall)
 
@@ -153,7 +155,7 @@ class SARI(SourceAndReferencedMetric):
 
         return (keepscore, delscore_precision, addscore)
 
-    def SARIsent(self, ssent, csent, rsents):
+    def SARIsent(self, ssent: str, csent: str, rsents: List[str]) -> float:
         numref = len(rsents)
 
         s1grams = ssent.split(" ")
@@ -255,11 +257,11 @@ class SARI(SourceAndReferencedMetric):
 
     def normalize(
         self,
-        sentence,
+        sentence: str,
         lowercase: bool = True,
         tokenizer: str = "13a",
         return_str: bool = True,
-    ):
+    ) -> List[str]:
 
         # Normalization is requried for the ASSET dataset to allow using space
         # to split the sentence. Even though Wiki-Auto and TURK datasets,
@@ -277,7 +279,7 @@ class SARI(SourceAndReferencedMetric):
 
         return sentence
 
-    def tokenize(self, sentence, tokenizer):
+    def tokenize(self, sentence: str, tokenizer: str) -> List[str]:
         if tokenizer in ["intl", "13a"]:
             sentence = sacrebleu.metrics.bleu._get_tokenizer(tokenizer)()(sentence)
         elif tokenizer == "moses":
