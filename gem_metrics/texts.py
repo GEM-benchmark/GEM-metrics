@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
+from .tokenize import default_tokenize_func
+from gem_metrics.config import get_language_for_dataset, get_task_type_for_dataset
 
 import functools
-from gem_metrics.config import get_language_for_dataset, get_task_type_for_dataset
-from typing import List, Optional
+from typing import List, Optional, Union, Dict
 import json
 import string
 from pycountry import languages
 from logzero import logger
-from .tokenize import default_tokenize_func
+
 
 
 class Texts:
@@ -15,7 +16,7 @@ class Texts:
 
     PUNCTUATION = set(string.punctuation)
 
-    def __init__(self, data_key, data, language="en"):
+    def __init__(self, data_key: str, data: Union[str, Dict], language="en"):
         self.data_key = data_key
         # TODO allow other data formats.
         if not isinstance(data, dict):

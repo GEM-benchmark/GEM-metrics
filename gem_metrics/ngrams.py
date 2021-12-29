@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 
+from typing import Dict, List, Tuple
+from .metric import ReferencelessMetric
+from .texts import Predictions
+
 import numpy as np
 from nltk import ngrams
-
-from .metric import ReferencelessMetric
 
 
 class NGramStats(ReferencelessMetric):
@@ -28,7 +30,7 @@ class NGramStats(ReferencelessMetric):
         # NGramStats is corpus-level, so individual examples can't be aggregated.
         return False
 
-    def compute(self, cache, predictions):
+    def compute(self, cache, predictions: Predictions) -> Dict:
 
         results = {}
         for data_id, data in [
@@ -64,7 +66,7 @@ class NGramStats(ReferencelessMetric):
 
         return results
 
-    def _ngram_stats(self, data, N):
+    def _ngram_stats(self, data: List[List[str]], N: int) -> Tuple[Dict, int, int]:
         """Return basic ngram statistics, as well as a dict of all ngrams and their freqsuencies."""
         ngram_freqs = {}  # ngrams with frequencies
         ngram_len = 0  # total number of ngrams
@@ -76,7 +78,7 @@ class NGramStats(ReferencelessMetric):
         uniq_ngrams = len([val for val in ngram_freqs.values() if val == 1])
         return ngram_freqs, uniq_ngrams, ngram_len
 
-    def _entropy(self, ngram_freqs):
+    def _entropy(self, ngram_freqs: Dict) -> float:
         """Shannon entropy over ngram frequencies"""
         total_freq = sum(ngram_freqs.values())
         return -sum(
@@ -86,7 +88,7 @@ class NGramStats(ReferencelessMetric):
             ]
         )
 
-    def _cond_entropy(self, joint, ctx):
+    def _cond_entropy(self, joint: Dict, ctx: Dict) -> float:
         """Conditional/next-word entropy (language model style), using ngrams (joint) and n-1-grams (ctx)."""
         total_joint = sum(joint.values())
         total_ctx = sum(ctx.values())
