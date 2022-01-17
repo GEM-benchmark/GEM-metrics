@@ -449,8 +449,15 @@ def process_files(config):
         if config.sources_file is not None:
             srcs = Sources(config.sources_file)
             assert len(srcs) == len(outs)
-        # In single file mode this is automatically all serial.
-        serial_metric_dict.update(parallel_metric_dict)
+
+        # In single file mode, all metrics are calculated serially. The parallel metrics dictionary
+        # is merged with the serial metrics dictionary.
+        for metric_type, metric_list in parallel_metric_dict.items():
+            if metric_type in serial_metric_dict:
+                serial_metric_dict[metric_type].extend(metric_list)
+            else:
+                serial_metric_dict[metric_type] = metric_list
+
         values = compute(outs, refs, srcs, serial_metric_dict, cache)
 
     # print output
