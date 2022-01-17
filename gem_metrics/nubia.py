@@ -1,7 +1,9 @@
+from .metric import ReferencedMetric
+from .texts import Predictions, References
+
 from nubia_score import Nubia
 import numpy as np
-from .metric import ReferencedMetric
-
+from typing import Dict
 
 class NUBIA(ReferencedMetric):
     def __init__(self):
@@ -15,7 +17,7 @@ class NUBIA(ReferencedMetric):
         self.metric.roberta_MNLI.to("cuda")
         self.metric.gpt_model.to("cuda")
 
-    def compute(self, cache, predictions, references):
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         """Run Nubia"""
         scores = {}
         for ref, pred, pred_id in zip(

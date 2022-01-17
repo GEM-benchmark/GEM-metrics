@@ -1,4 +1,8 @@
+
 from .metric import ReferencedMetric
+from .texts import Predictions, References
+
+from typing import Any, Dict, List, Set, Tuple, Union
 from collections import Counter, defaultdict
 
 
@@ -26,7 +30,7 @@ class LocalRecall(ReferencedMetric):
         # LocalRecall is corpus-level, so individual examples can't be aggregated.
         return False
 
-    def compute(self, cache, predictions, references):
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         results = LocalRecall.local_recall_scores(
             predictions.list_tokenized_lower_nopunct,
             references.list_tokenized_lower_nopunct,
@@ -35,7 +39,7 @@ class LocalRecall(ReferencedMetric):
         return {"local_recall": results}
 
     @staticmethod
-    def build_reference_index(refs):
+    def build_reference_index(refs: List[List[str]]) -> Dict[int, Set]:
         """
         Build reference index for a given item.
         Input: list of lists (list of sentences, where each sentence is a list of string tokens).
@@ -50,7 +54,7 @@ class LocalRecall(ReferencedMetric):
         return importance_index
 
     @staticmethod
-    def check_item(prediction, refs):
+    def check_item(prediction: Union[List[str], Set[str]], refs: List[List[str]]) -> Dict:
         """
         Check whether the predictions capture words that are frequently mentioned.
 
@@ -76,14 +80,14 @@ class LocalRecall(ReferencedMetric):
         return results
 
     @staticmethod
-    def replace(a_list, to_replace, replacement):
+    def replace(a_list: List[Any], to_replace: Any, replacement: Any) -> List[Any]:
         """
         Returns a_list with all occurrences of to_replace replaced with replacement.
         """
         return [replacement if x == to_replace else x for x in a_list]
 
     @staticmethod
-    def aggregate_score(outcomes):
+    def aggregate_score(outcomes: List[Tuple[int, int]]) -> float:
         """
         Produce an aggregate score based on a list of tuples: [(size_overlap, size_refs)]
         """
@@ -93,7 +97,7 @@ class LocalRecall(ReferencedMetric):
         return score
 
     @staticmethod
-    def local_recall_scores(predictions, full_references):
+    def local_recall_scores(predictions: List[List[str]], full_references: List[List[List[str]]]) -> Dict:
         """
         Compute local recall scores.
         """

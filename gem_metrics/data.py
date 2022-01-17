@@ -21,7 +21,7 @@ os.makedirs(_NLTK_DATA_PATH, exist_ok=True)
 nltk.data.path.insert(0, _NLTK_DATA_PATH)
 
 
-def nltk_ensure_download(package):
+def nltk_ensure_download(package: str):
     """Check if the given package is available, download if needed."""
     try:
         nltk.data.find(package)
@@ -30,7 +30,7 @@ def nltk_ensure_download(package):
         nltk.download(package_id, download_dir=_NLTK_DATA_PATH)
 
 
-def _urlretrieve_reporthook(count, block_size, total_size, start_time):
+def _urlretrieve_reporthook(count: int, block_size: int, total_size: int, start_time: int):
     """Helper function -- progress indicator."""
     # adapted from https://stackoverflow.com/questions/51212/how-to-write-a-download-progress-indicator-in-python
     duration = time.time() - start_time
@@ -44,7 +44,7 @@ def _urlretrieve_reporthook(count, block_size, total_size, start_time):
     sys.stderr.flush()
 
 
-def ensure_download(subdir, target_file, url):
+def ensure_download(subdir: str, target_file: str, url: str) -> str:
     """Check if the given data file is available, download if needed."""
 
     target_dir = os.path.join(_BASE_DIR, subdir)

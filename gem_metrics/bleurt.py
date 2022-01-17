@@ -1,10 +1,12 @@
 #!/usr/bin/env python3
 from .data import ensure_download
 from .metric import ReferencedMetric
+from .texts import Predictions, References
+
 from bleurt import score
 import numpy as np
 import tensorflow as tf
-
+from typing import Dict
 
 class BLEURT(ReferencedMetric):
     """BLEURT uses the base checkpoint for efficient runtime."""
@@ -22,7 +24,7 @@ class BLEURT(ReferencedMetric):
         )
         self.metric = score.BleurtScorer(ckpt_path)
 
-    def compute(self, cache, predictions, references):
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         """Compute the BLEURT score. Multi-ref will be averaged."""
         # Use untokenized here since the module uses its own tokenizer.
         if isinstance(references.untokenized[0], list):
