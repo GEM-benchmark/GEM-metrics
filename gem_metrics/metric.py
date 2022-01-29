@@ -125,6 +125,10 @@ class ReproReferencedMetric(ReferencedMetric):
     def __init__(self, metric):
         self.metric = metric
 
+    def _postprocess(self, score_dicts: List) -> List:
+        """An optional method to post-process the output from Repro"""
+        return score_dicts
+
     def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         inputs = []
         for pred, refs in zip(predictions.untokenized, references.untokenized):
@@ -136,6 +140,7 @@ class ReproReferencedMetric(ReferencedMetric):
         # `micro` is a list of dicts. Each dict contains the scores
         # for that input
         _, micro = self.metric.predict_batch(inputs)
+        micro = self._postprocess(micro)
 
         # Write to the cache if not None and collect outputs
         id_to_scores = {}
