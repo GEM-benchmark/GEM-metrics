@@ -5,6 +5,7 @@ numpy
 rouge-score
 logzero
 pycountry
+repro==0.1.4
 sacrebleu>=2.0.0
 sacremoses
 
