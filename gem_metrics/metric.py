@@ -118,3 +118,31 @@ class SourceAndReferencedMetric(AbstractMetric):
 
     def compute(self, cache, predictions: Predictions, references: References, sources: Sources) -> Dict:
         raise NotImplementedError
+
+
+class ReproReferencedMetric(ReferencedMetric):
+    """Base class for all referenced metrics implemented in Repro."""
+    def __init__(self, metric):
+        self.metric = metric
+
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
+        inputs = []
+        for pred, refs in zip(predictions.untokenized, references.untokenized):
+            inputs.append({
+                "candidate": pred,
+                "references": refs
+            })
+
+        # `micro` is a list of dicts. Each dict contains the scores
+        # for that input
+        _, micro = self.metric.predict_batch(inputs)
+
+        # Write to the cache if not None and collect outputs
+        id_to_scores = {}
+        for pred_id, score_dict in zip(predictions.ids, micro):
+            id_to_scores[pred_id] = score_dict
+            if cache is not None:
+                cache_key = (self.__class__.__name__, predictions.filename, pred_id)
+                cache[cache_key] = score_dict
+
+        return id_to_scores
