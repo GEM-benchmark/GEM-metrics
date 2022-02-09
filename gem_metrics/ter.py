@@ -11,8 +11,8 @@ from itertools import zip_longest
 class TER(ReferencedMetric):
     """Translation error rate (TER) from SacreBLEU."""
 
-    def __init__(self, case_sensitive: bool = False):
-            self.metric = _TER(case_sensitive=case_sensitive)
+    def __init__(self, normalized: bool = True, case_sensitive: bool = False):
+            self.metric = _TER(normalized=normalized, case_sensitive=case_sensitive)
 
     def support_caching(self):
         # corpus-level, so individual examples can't be aggregated.
