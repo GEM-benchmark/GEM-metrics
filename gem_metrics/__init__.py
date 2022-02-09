@@ -51,6 +51,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "nubia": "NUBIA",
         "questeval": "QuestEval",
         "prism": "Prism",
+        "ter": "TER",
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
@@ -509,10 +510,11 @@ def main():
             "msttr",
             "ngrams",
             "sari",
+            "ter",
             "local_recall",
         ],
         help=(
-            "Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, local_recall]. "
+            "Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, ter, local_recall]. "
             + "You can add bertscore, bleurt, nubia and questeval by manually adding them in the command "
             + "line argument here, or by using the --heavy-metrics flag"
         ),
