@@ -28,7 +28,7 @@ class AbstractMetric:
             )
         elif isinstance(score_list[0], dict):
             l1_keys = list(score_list[0].keys())
-            if isinstance(list(score_list[0].values())[0], float):
+            if isinstance(list(score_list[0].values())[0], (float, int)):
                 return {
                     key: round(np.mean([score[key] for score in score_list]), 5)
                     for key in l1_keys
