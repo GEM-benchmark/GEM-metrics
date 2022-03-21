@@ -16,8 +16,8 @@ class CIDER(ReferencedMetric):
     """CIDEr (Consensus-Based Image Description Evaluation) Metric. Computation is done on lower-cased data without punctuation
     (http://arxiv.org/abs/1411.5726).
     This is based on scripts by authors Vedantam <vrama91@vt.edu> and Tsung-Yi Lin <tl483@cornell.edu>:
-    https://github.com/vrama91/cider/blob/master/pyciderevalcap/cider/cider.py. Should be nearly identical to original, only
-    difference is tokenization; the original uses stanford-corenlp-3.4.1.jar.
+    https://github.com/vrama91/cider/blob/master/pyciderevalcap/cider/cider.py. Implementation should be nearly identical
+    to original, the only difference is tokenization; the original uses stanford-corenlp-3.4.1.jar.
     """
 
     def __init__(self, n=4, sigma=6.0):
