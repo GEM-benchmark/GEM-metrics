@@ -15,9 +15,9 @@ from .texts import Predictions, References
 class CIDER(ReferencedMetric):
     """CIDEr (Consensus-Based Image Description Evaluation) Metric. Computation is done on lower-cased data without punctuation
     (http://arxiv.org/abs/1411.5726).
-    This is based on scripts by authors Vedantam <vrama91@vt.edu> and Tsung-Yi Lin <tl483@cornell.edu>
-    https://github.com/vrama91/cider/blob/master/pyciderevalcap/cider/cider.py. Should be identical to original apart from tokenization;
-    the original uses stanford-corenlp-3.4.1.jar.
+    This is based on scripts by authors Vedantam <vrama91@vt.edu> and Tsung-Yi Lin <tl483@cornell.edu>:
+    https://github.com/vrama91/cider/blob/master/pyciderevalcap/cider/cider.py. Should be nearly identical to original, only
+    difference is tokenization; the original uses stanford-corenlp-3.4.1.jar.
     """
 
     def __init__(self, n=4, sigma=6.0):
@@ -92,7 +92,7 @@ class CIDER(ReferencedMetric):
         :param n: int : number of ngrams for which (ngram) representation is calculated
         :return: result (dict)
         """
-        return self.precook(test, n, True)
+        return self.precook(test, n)
 
     def copy(self):
         """copy the refs."""
