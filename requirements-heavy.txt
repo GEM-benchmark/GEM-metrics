@@ -1,3 +1,4 @@
 nubia-score
 bert_score
 questeval==0.2.4
+git+https://github.com/AIPHES/emnlp19-moverscore
