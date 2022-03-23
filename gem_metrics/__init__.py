@@ -52,6 +52,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "questeval": "QuestEval",
         "prism": "Prism",
         "ter": "TER",
+        "moverscore":"MoverScore"
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
@@ -504,14 +505,15 @@ def main():
         nargs="+",
         default=[
             "bleu",
-            "rouge",
-            "chrf",
-            "nist",
-            "msttr",
-            "ngrams",
-            "sari",
-            "ter",
-            "local_recall",
+            "moverscore"
+            # "rouge",
+            # "chrf",
+            # "nist",
+            # "msttr",
+            # "ngrams",
+            # "sari",
+            # "ter",
+            # "local_recall",
         ],
         help=(
             "Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, ter, local_recall]. "
