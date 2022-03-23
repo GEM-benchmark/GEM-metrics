@@ -52,7 +52,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "questeval": "QuestEval",
         "prism": "Prism",
         "ter": "TER",
-        "moverscore":"MoverScore"
+        "moverscore": "MoverScore"
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
@@ -319,6 +319,8 @@ def process_files(config):
         parallel_metrics_list.append("nubia")
         parallel_metrics_list.append("meteor")
         parallel_metrics_list.append("questeval")
+        parallel_metrics_list.append("moverscore")
+
     serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
 
     # Optionally, set up cache.
@@ -505,15 +507,14 @@ def main():
         nargs="+",
         default=[
             "bleu",
-            "moverscore"
-            # "rouge",
-            # "chrf",
-            # "nist",
-            # "msttr",
-            # "ngrams",
-            # "sari",
-            # "ter",
-            # "local_recall",
+            "rouge",
+            "chrf",
+            "nist",
+            "msttr",
+            "ngrams",
+            "sari",
+            "ter",
+            "local_recall",
         ],
         help=(
             "Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, ter, local_recall]. "
