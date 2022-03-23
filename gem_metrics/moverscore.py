@@ -11,7 +11,7 @@ from .texts import Predictions, References
 
 
 class MoverScore(ReferencedMetric):
-    """MoverScore"""
+    """MoverScore uses the original implementation at https://github.com/AIPHES/emnlp19-moverscore"""
 
     def support_caching(self):
         return False
