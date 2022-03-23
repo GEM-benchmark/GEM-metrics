@@ -1,4 +1,5 @@
 import unittest
+
 import gem_metrics.moverscore
 from tests.test_referenced import TestReferencedMetric
 
@@ -15,4 +16,3 @@ class TestMoverScore(TestReferencedMetric, unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-
