@@ -43,7 +43,7 @@ class MoverScore(ReferencedMetric):
 
         return sentence_score
 
-    def corpus_score(self,hyp, refs):
+    def compute_score(self,hyp, refs):
         corpus_score = 0
         for i, j in enumerate(hyp):
             corpus_score += self.sentence_score(j, refs[i])
