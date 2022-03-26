@@ -52,6 +52,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "questeval": "QuestEval",
         "prism": "Prism",
         "ter": "TER",
+        "wer":"WER"
         "cider": "CIDER",
     }
 
