@@ -54,6 +54,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "ter": "TER",
         "wer":"WER",
         "cider": "CIDER",
+        "moverscore": "MoverScore",
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
@@ -320,6 +321,8 @@ def process_files(config):
         parallel_metrics_list.append("nubia")
         parallel_metrics_list.append("meteor")
         parallel_metrics_list.append("questeval")
+        parallel_metrics_list.append("moverscore")
+
     serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
 
     # Optionally, set up cache.
