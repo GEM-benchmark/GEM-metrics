@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+from numpy import NaN
 from .metric import ReferencelessMetric
 from .texts import Predictions
 
@@ -41,5 +42,8 @@ class TTR(ReferencelessMetric):
 
     def compute(self, cache, predictions: Predictions) -> Dict:
         total, vocabulary = self.get_vocabulary(predictions.untokenized)
-        score = len(vocabulary)/total
+        if total == 0:
+            score = NaN
+        else:
+            score = len(vocabulary)/total
         return {"ttr": round(score, 5)}

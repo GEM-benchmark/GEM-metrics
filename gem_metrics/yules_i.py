@@ -14,9 +14,13 @@ class Yules_I(ReferencelessMetric):
     Complexity in Machine Translation", Vanmassenhove et al., EACL 2021.
 
     Yule’s characteristic constant (Yule’s K) measures constancy of text 
-    as the repetitiveness of vocabulary. Yule’s K and its inverse Yule’s I 
-    (implemented here) are considered to be more resilient to fluctuations
+    as the repetitiveness of vocabulary. The larger the Yule's K, 
+    the less rich the vocabulary is. Yule’s K and its inverse Yule’s I 
+    (implemented here) are considered to be more resilient to fluctuations 
     related to text length than TTR.
+    For a history of constancy measures of text, see Tanaka-Ishii et al, 
+    "Computational Constancy Measures of Texts—Yule's K and Rényi's Entropy".
+    The implementation follows equation (1) in the above paper.
     """
 
     def support_caching(self):
@@ -50,12 +54,12 @@ class Yules_I(ReferencelessMetric):
         _, vocabulary = self.get_vocabulary(predictions.untokenized)
 
         M1 = float(len(vocabulary))
-        M2 = sum([len(list(g))*(freq**2) for freq,g in itertools.groupby(sorted(vocabulary.values()))])
+        M2 = sum([len(list(g))*(freq**2) for freq, g in itertools.groupby(sorted(vocabulary.values()))])
         
-        score = (M1*M1)/(M2-M1)
+        if M2-M1 == 0:
+            score = 0.0
+        else:
+            score = (M1*M1)/(M2-M1)
 
-        try:
-            return {"yules_i": round(score, 5)}
-        except ZeroDivisionError:
-            return {"yules_i": 0.0}
-
+        return {"yules_i": round(score, 3)}
+        
