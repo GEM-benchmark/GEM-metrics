@@ -54,6 +54,9 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "ter": "TER",
         "ttr": "TTR",
         "yules_i": "Yules_I",
+        "wer":"WER",
+        "cider": "CIDER",
+        "moverscore": "MoverScore",
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
