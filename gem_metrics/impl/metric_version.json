@@ -1,0 +1,22 @@
+{
+  "bertscore": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "bleu": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "bleurt": "0355c2288b23e34031633f53ce54ead6c0cc3d92",
+  "chrf": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "local_recall": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "meteor": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "nist": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "rouge": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "msttr": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "ngrams": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "sari": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "nubia": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "questeval": "3307119173fc24b90bd49a1a30b9ea901e8d31ef",
+  "prism": "4d992e53ae8889e603f5e62e5c56465f90a1dd2a",
+  "ter": "ac526f2c2a137d5487d681574a3528ee6c27686f",
+  "ttr": "61a87d1a92440d4f7f4567bea53fa7ab44d3e438",
+  "yules_i": "61a87d1a92440d4f7f4567bea53fa7ab44d3e438",
+  "wer": "1aea873c3ad51c7775a2b6e539fa9d0646dd8ba4",
+  "cider": "25ce278994ff48d2163c2fb498caaa2a0abc98f5",
+  "moverscore": "d9e0374817997684357e6cb5cdd3d1ea11ff7b70"
+}
