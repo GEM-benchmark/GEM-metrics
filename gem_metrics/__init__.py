@@ -52,6 +52,11 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "questeval": "QuestEval",
         "prism": "Prism",
         "ter": "TER",
+        "ttr": "TTR",
+        "yules_i": "Yules_I",
+        "wer":"WER",
+        "cider": "CIDER",
+        "moverscore": "MoverScore",
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
@@ -318,6 +323,8 @@ def process_files(config):
         parallel_metrics_list.append("nubia")
         parallel_metrics_list.append("meteor")
         parallel_metrics_list.append("questeval")
+        parallel_metrics_list.append("moverscore")
+
     serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
 
     # Optionally, set up cache.
@@ -511,10 +518,12 @@ def main():
             "ngrams",
             "sari",
             "ter",
+            "ttr",
+            "yules_i",
             "local_recall",
         ],
         help=(
-            "Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, ter, local_recall]. "
+            "Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, ter, ttr, yules_i, local_recall]. "
             + "You can add bertscore, bleurt, nubia and questeval by manually adding them in the command "
             + "line argument here, or by using the --heavy-metrics flag"
         ),
