@@ -10,22 +10,27 @@ from pycountry import languages
 from logzero import logger
 
 
-
 class Texts:
-    """Holder class for output texts or references."""
+    """Holder class for output texts or references (base class for
+    Predictions, References, Sources)."""
 
     PUNCTUATION = set(string.punctuation)
 
-    def __init__(self, data_key: str, data: Union[str, Dict], language="en"):
+    def __init__(self, data_key: str, data: Union[str, List, Dict], language="en"):
         self.data_key = data_key
-        # TODO allow other data formats.
-        if not isinstance(data, dict):
+        # allow bare lists
+        if isinstance(data, list):
+            self.filename = None
+            self.all_data = data
+        # strings mean filename paths
+        elif not isinstance(data, dict):
             self.filename = data
             with open(data, "r", encoding="UTF-8") as fh:
                 data = json.load(fh)
                 self.all_data = data
             if isinstance(data, dict) and "values" in data:
                 self.all_data = data["values"]
+        # default: dict with the default structure
         else:
             self.filename = data.get("filename")
             self.all_data = data["values"]
@@ -63,7 +68,7 @@ class Texts:
     @property
     @functools.lru_cache()
     def _tokenized(self):
-        """Return list of (lists of) untokenized strings."""
+        """Return list of (lists of) tokenized strings."""
         if self.multi_ref:
             return [[self.tokenize_func(i) for i in inst] for inst in self.data]
         else:
@@ -117,7 +122,8 @@ class Texts:
         original dataset. Can also be used to filter a dataset by ID.
 
         Args:
-            id_list: ordered ID list of the associated reference file.
+            id_list: ordered ID list of the associated reference file (None = default
+                to original order).
         """
         if self.ids is not None and id_list is not None:
             # Is the ID list set, but in a different order?
@@ -158,10 +164,16 @@ class Predictions(Texts):
 
 
 class References(Texts):
-    """Data holder class for references/targets."""
+    """Data holder class for references/targets. Assumes a list of references per
+    instance, will create 1-element lists if needed."""
 
     def __init__(self, data, language="en"):
         super().__init__(data_key="target", data=data, language=language)
+        if not self.multi_ref:
+            # convert to fake multi-ref (1-element lists per instance) so that metrics
+            # (mostly expecting multiple references per instance) work correctly
+            self.data = [[item] for item in self.data]
+            self.multi_ref = True
 
     @property
     def has_parent_ids(self):
@@ -176,9 +188,12 @@ class Sources(Texts):
 
 
 class Submission:
-    """Data class for multiple submissions."""
+    """Data class for a GEM submission, consiting of (potentially) multiple datasets."""
 
     def __init__(self, data):
+        """Create a new Submission.
+        @param data: either a `dict` with the submission structure, or a `str` with a JSON filename path.
+        """
         if isinstance(data, dict):
             self.all_data = data
         else:
