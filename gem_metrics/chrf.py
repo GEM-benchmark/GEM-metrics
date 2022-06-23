@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 
 from .metric import ReferencedMetric
+from .texts import Predictions, References
 
 from itertools import zip_longest
-
 import sacrebleu
+from typing import Dict
 
 class CHRF(ReferencedMetric):
     """
@@ -40,7 +41,7 @@ class CHRF(ReferencedMetric):
         # corpus-level, so individual examples won't be aggregated.
         return False
 
-    def compute(self, cache, predictions, references):
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         ref_streams = list(zip_longest(*references.untokenized))
         scores = {}
         

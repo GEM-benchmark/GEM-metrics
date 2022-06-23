@@ -1,0 +1,32 @@
+name: On-Demand Unit Tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      files:
+        description: "Files with unittests that should be run"
+        required: true
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-java@v2
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.9'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install --upgrade pip setuptools wheel
+        pip install -r requirements.txt
+
+    - name: Test with unittest
+      run: |
+        python -m unittest ${{ github.event.inputs.files }}

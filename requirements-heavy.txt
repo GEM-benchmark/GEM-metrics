@@ -1,4 +1,5 @@
 nubia-score
 bert_score
-git+https://github.com/google-research/bleurt.git
 questeval==0.2.4
+moverscore@git+https://github.com/AIPHES/emnlp19-moverscore.git@b9d4144
+pyemd

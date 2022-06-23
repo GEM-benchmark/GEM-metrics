@@ -50,6 +50,13 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "sari": "SARI",
         "nubia": "NUBIA",
         "questeval": "QuestEval",
+        "prism": "Prism",
+        "ter": "TER",
+        "ttr": "TTR",
+        "yules_i": "Yules_I",
+        "wer":"WER",
+        "cider": "CIDER",
+        "moverscore": "MoverScore",
     }
 
     referenced_list, referenceless_list, sourced_and_referenced_list = [], [], []
@@ -316,6 +323,8 @@ def process_files(config):
         parallel_metrics_list.append("nubia")
         parallel_metrics_list.append("meteor")
         parallel_metrics_list.append("questeval")
+        parallel_metrics_list.append("moverscore")
+
     serial_metric_dict = metric_list_to_metric_dict(parallel_metrics_list)
 
     # Optionally, set up cache.
@@ -449,8 +458,15 @@ def process_files(config):
         if config.sources_file is not None:
             srcs = Sources(config.sources_file)
             assert len(srcs) == len(outs)
-        # In single file mode this is automatically all serial.
-        serial_metric_dict.update(parallel_metric_dict)
+
+        # In single file mode, all metrics are calculated serially. The parallel metrics dictionary
+        # is merged with the serial metrics dictionary.
+        for metric_type, metric_list in parallel_metric_dict.items():
+            if metric_type in serial_metric_dict:
+                serial_metric_dict[metric_type].extend(metric_list)
+            else:
+                serial_metric_dict[metric_type] = metric_list
+
         values = compute(outs, refs, srcs, serial_metric_dict, cache)
 
     # print output
@@ -501,10 +517,13 @@ def main():
             "msttr",
             "ngrams",
             "sari",
+            "ter",
+            "ttr",
+            "yules_i",
             "local_recall",
         ],
         help=(
-            "Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, local_recall]. "
+            "Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, ter, ttr, yules_i, local_recall]. "
             + "You can add bertscore, bleurt, nubia and questeval by manually adding them in the command "
             + "line argument here, or by using the --heavy-metrics flag"
         ),

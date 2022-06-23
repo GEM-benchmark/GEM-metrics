@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-
+from .texts import Predictions, References
 from .metric import ReferencedMetric
+
+from typing import Dict
 import numpy as np
 from rouge_score import rouge_scorer, scoring
 
@@ -12,7 +14,7 @@ class ROUGE(ReferencedMetric):
     the jackknifing follows the description of the ROUGE paper.
     """
 
-    def compute(self, cache, predictions, references):
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         rouge_types = ["rouge1", "rouge2", "rougeL", "rougeLsum"]
         rouge = rouge_scorer.RougeScorer(rouge_types=rouge_types, use_stemmer=True)
         scores = {}

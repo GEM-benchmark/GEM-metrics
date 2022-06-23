@@ -1,6 +1,8 @@
 import json
+import os
 from numpy import long, ndarray
 from gem_metrics.texts import Texts
+from typing import List, Tuple
 
 
 def assertDeepAlmostEqual(test_case, expected, actual, *args, **kwargs):
@@ -62,3 +64,19 @@ def read_test_data(pth: str, data_type: Texts) -> Texts:
     """
     with open(pth, "r") as fin:
         return data_type(json.load(fin))
+
+
+def get_testing_device() -> int:
+    """Get the device ID that unit tests should be run on.
+
+    The device ID can be set via the TEST_DEVICE environment parameter.
+    -1 should be used for CPU and >= 0 for GPU. If the environment variable
+    is not set, -1 is returned by default.
+
+    Returns:
+        int: The device ID
+    """
+    key = "TEST_DEVICE"
+    if key in os.environ:
+        return int(os.environ[key])
+    return -1

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+from .texts import Predictions, References, Sources
+
 from copy import copy
 import numpy as np
-from typing import List
+from typing import List, Dict
 from logzero import logger
 
 
@@ -26,7 +28,7 @@ class AbstractMetric:
             )
         elif isinstance(score_list[0], dict):
             l1_keys = list(score_list[0].keys())
-            if isinstance(list(score_list[0].values())[0], float):
+            if isinstance(list(score_list[0].values())[0], (float, int)):
                 return {
                     key: round(np.mean([score[key] for score in score_list]), 5)
                     for key in l1_keys
@@ -42,12 +44,11 @@ class AbstractMetric:
                     }
                     for key1 in l1_keys
                 }
-        else:
-            return ValueError(
-                "Please add to this function an aggregator for your data format."
-            )
+        return ValueError(
+            "Please add to this function an aggregator for your data format."
+        )
 
-    def compute_cached(self, cache, predictions, *args):
+    def compute_cached(self, cache, predictions: Predictions, *args):
         """Loops through the predictions to check for cache hits before computing."""
         original_order = copy(predictions.ids)
 
@@ -100,19 +101,52 @@ class AbstractMetric:
 class ReferencelessMetric(AbstractMetric):
     """Base class for all referenceless metrics."""
 
-    def compute(self, cache, predictions):
+    def compute(self, cache, predictions: Predictions) -> Dict:
         raise NotImplementedError
 
 
 class ReferencedMetric(AbstractMetric):
     """Base class for all referenced metrics."""
 
-    def compute(self, cache, predictions, references):
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         raise NotImplementedError
 
 
 class SourceAndReferencedMetric(AbstractMetric):
     """Base class for all metrics that require source and reference sentences."""
 
-    def compute(self, cache, predictions, references, sources):
+    def compute(self, cache, predictions: Predictions, references: References, sources: Sources) -> Dict:
         raise NotImplementedError
+
+
+class ReproReferencedMetric(ReferencedMetric):
+    """Base class for all referenced metrics implemented in Repro."""
+    def __init__(self, metric):
+        self.metric = metric
+
+    def _postprocess(self, score_dicts: List) -> List:
+        """An optional method to post-process the output from Repro"""
+        return score_dicts
+
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
+        inputs = []
+        for pred, refs in zip(predictions.untokenized, references.untokenized):
+            inputs.append({
+                "candidate": pred,
+                "references": refs
+            })
+
+        # `micro` is a list of dicts. Each dict contains the scores
+        # for that input
+        _, micro = self.metric.predict_batch(inputs)
+        micro = self._postprocess(micro)
+
+        # Write to the cache if not None and collect outputs
+        id_to_scores = {}
+        for pred_id, score_dict in zip(predictions.ids, micro):
+            id_to_scores[pred_id] = score_dict
+            if cache is not None:
+                cache_key = (self.__class__.__name__, predictions.filename, pred_id)
+                cache[cache_key] = score_dict
+
+        return id_to_scores

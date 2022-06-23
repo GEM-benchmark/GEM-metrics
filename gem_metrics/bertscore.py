@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
+from .texts import Predictions, References
 from .metric import ReferencedMetric
+
+from typing import Dict, List
 from datasets import load_metric
-import numpy as np
+
 
 
 class BERTScore(ReferencedMetric):
@@ -16,11 +19,11 @@ class BERTScore(ReferencedMetric):
     def _initialize(self):
         self.metric = load_metric("bertscore", batch_size=64)
 
-    def _make_serializable(self, score_entry):
+    def _make_serializable(self, score_entry) -> List[float]:
         """Convert from tensor object to list of floats."""
         return [float(score) for score in score_entry]
 
-    def compute(self, cache, predictions, references):
+    def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         """Run BERTScore."""
         self.metric.add_batch(
             predictions=predictions.untokenized, references=references.untokenized
