@@ -96,6 +96,7 @@ def compute(
     refs: Optional[References] = None,
     srcs: Optional[Sources] = None,
     metrics_dict: Dict[str, List] = None,
+    metrics_list: List[str] = None,
     cache: Optional[Cache] = None,
     dataset_name: Optional[str] = "",
 ) -> Dict:
@@ -105,16 +106,28 @@ def compute(
       outs: texts.Predictions object.
       refs: texts.References object (optional).
       srcs: texts.Sources object (optional).
-      metrics_dict: is a dictionary with three keys:
-      referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics.
-      Each of those keys' values are a List of the specific metrics.
+      metrics_dict: is a dictionary with three keys --
+          referenced_metrics, referenceless_metrics, and sourced_and_referenced_metrics.
+          Each of those keys' values are a List of the specific metrics.
+      metrics_list: is a list of metrics names (will be converted to dict automatically),
+          only used if metrics_dict is None.
       cache: a diskcache.Cache object for fast lookups of redundant computations.
+      dataset_name: name of the dataset (just passed to the output json)
 
     Returns:
       values: A dict with the results with metric names as keys.
     """
     # initialize values storage.
     values = {"predictions_file": outs.filename, "N": len(outs)}
+
+    # check we have some metrics to compute
+    assert metrics_dict is not None or metrics_list is not None
+    if metrics_dict is None:
+        metrics_dict = metric_list_to_metric_dict(metrics_list)
+
+    # make caching work if the predictions have no IDs of their own
+    if outs.ids is None:
+        outs.assign_ids_and_unscramble(None)
 
     # compute referenceless metrics.
     for metric_class in metrics_dict["referenceless_metrics"]:
@@ -523,8 +536,8 @@ def main():
             "local_recall",
         ],
         help=(
-            "Full metric list default is [bleu, meteor, rouge, nist, msttr, ngram, sari, ter, ttr, yules_i, local_recall]. "
-            + "You can add bertscore, bleurt, nubia and questeval by manually adding them in the command "
+            "Full metric list default is [bleu, rouge, nist, msttr, ngram, sari, ter, ttr, yules_i, local_recall]. "
+            + "You can add bertscore, bleurt, meteor, moverscore, nubia, questeval by manually adding them in the command "
             + "line argument here, or by using the --heavy-metrics flag"
         ),
     )
