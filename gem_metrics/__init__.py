@@ -228,7 +228,7 @@ def process_submission(
 
     def multiprocess_compute(dataset, outs_ds, refs_ds, srcs_ds, metrics_dict, cache):
         shared_dict[dataset] = compute(
-            outs_ds, refs_ds, srcs_ds, metrics_dict, cache, dataset
+            outs_ds, refs_ds, srcs_ds, metrics_dict, None, cache, dataset
         )
 
     job_args = []
@@ -256,7 +256,7 @@ def process_submission(
         srcs_ds = srcs.get(dataset, None)
         shared_dict[dataset].update(
             compute(
-                outs_ds, refs_ds, srcs_ds, serial_metric_dict, cache, dataset
+                outs_ds, refs_ds, srcs_ds, serial_metric_dict, None, cache, dataset
             )
         )
 
@@ -480,7 +480,7 @@ def process_files(config):
             else:
                 serial_metric_dict[metric_type] = metric_list
 
-        values = compute(outs, refs, srcs, serial_metric_dict, cache)
+        values = compute(outs, refs, srcs, serial_metric_dict, None, cache)
 
     # print output
     out_fh = sys.stdout
