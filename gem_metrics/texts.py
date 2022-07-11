@@ -28,6 +28,12 @@ class Texts:
             with open(data, "r", encoding="UTF-8") as fh:
                 data = json.load(fh)
                 self.all_data = data
+                try:
+                    el = data[0]['references']
+                    if bool(el) and isinstance(el, list) and all(isinstance(elem, str) for elem in el):
+                        self.data_key = 'references'
+                except:
+                    pass
             if isinstance(data, dict) and "values" in data:
                 self.all_data = data["values"]
         # default: dict with the default structure
@@ -47,7 +53,7 @@ class Texts:
         if isinstance(self.all_data[0], str):
             self.data = [item for item in self.all_data]
         else:
-            self.data = [item[data_key] for item in self.all_data]
+            self.data = [item[self.data_key] for item in self.all_data]
             if "gem_id" in self.all_data[0].keys():
                 self.ids = [item["gem_id"] for item in self.all_data]
 
