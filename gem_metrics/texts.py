@@ -16,7 +16,23 @@ class Texts:
 
     PUNCTUATION = set(string.punctuation)
 
-    def __init__(self, data_key: str, data: Union[str, List, Dict], language="en"):
+    def __init__(self, data_key: Union[str, List], data: Union[str, List, Dict], language="en"):
+        """
+        Constructor, to be used by subclasses (`Sources`, `References`, `Predictions`).
+        Allows creating the object based on in-memory data or a file.
+
+        `data_key`: To be specified by subclasses. Indicates under which key in each instance
+                the data can be found (so you can build `Sources`, `References` and `Predictions`
+                from the same underlying data structure -- each uses their own data key). The
+                `data_key` is typically given by each subclass. It also allows a priority list
+                of alternatives.
+
+        `data`: Can be a file path (`str`), a `list` of instances, or a `dict` where the `values`
+                key is used to locate the instances.
+
+        `language`: The language of the data (used for tokenization). Use ISO-639 2-letter codes.
+                Defaults to English.
+        """
         self.data_key = data_key
         # allow bare lists
         if isinstance(data, list):
@@ -28,12 +44,6 @@ class Texts:
             with open(data, "r", encoding="UTF-8") as fh:
                 data = json.load(fh)
                 self.all_data = data
-                try:
-                    el = data[0]['references']
-                    if bool(el) and isinstance(el, list) and all(isinstance(elem, str) for elem in el):
-                        self.data_key = 'references'
-                except:
-                    pass
             if isinstance(data, dict) and "values" in data:
                 self.all_data = data["values"]
         # default: dict with the default structure
@@ -53,6 +63,14 @@ class Texts:
         if isinstance(self.all_data[0], str):
             self.data = [item for item in self.all_data]
         else:
+            # multiple alternatives for the data key -- try the first one that matches
+            if isinstance(self.data_key, list):
+                for key in self.data_key:
+                    if key in self.all_data[0].keys():
+                        self.data_key = key
+                        break
+                if not isinstance(self.data_key, str):
+                    raise Exception(f"No suitable data key ({str(self.data_key)}) found in {str(self.filename)}")
             self.data = [item[self.data_key] for item in self.all_data]
             if "gem_id" in self.all_data[0].keys():
                 self.ids = [item["gem_id"] for item in self.all_data]
@@ -165,8 +183,6 @@ class Predictions(Texts):
         # Task is used in QuestEval metric to select the correct model.
         self.task = task
         super().__init__(data_key="generated", data=data, language=language)
-        #if self.ids is None:
-        #    self.ids = ["unk-%05d" % i for i in range(len(self))]
 
 
 class References(Texts):
@@ -174,7 +190,7 @@ class References(Texts):
     instance, will create 1-element lists if needed."""
 
     def __init__(self, data, language="en"):
-        super().__init__(data_key="target", data=data, language=language)
+        super().__init__(data_key=["references", "target"], data=data, language=language)
         if not self.multi_ref:
             # convert to fake multi-ref (1-element lists per instance) so that metrics
             # (mostly expecting multiple references per instance) work correctly
