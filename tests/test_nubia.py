@@ -7,7 +7,6 @@ class TestNubia(TestReferencedMetric, unittest.TestCase):
     def setUp(self):
         super().setUp()
         self.metric = gem_metrics.nubia.NUBIA()
-        self.metric._initialize()
         self.true_results_basic = {"nubia": 0.767}
         self.true_results_identical_pred_ref = {"nubia": 1.0}
         self.true_results_mismatched_pred_ref = {"nubia": 0.047}
