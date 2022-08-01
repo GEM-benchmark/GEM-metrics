@@ -56,11 +56,12 @@ class Texts:
 
         self.language = languages.get(alpha_2=language)
 
-        # Allow bare lists of strings as well as lists of dicts.
+        # Allow bare lists of strings (or lists of lists of strings) as well as lists of dicts.
         # In case of Dicts, check for IDs we need to shuffle.
         self.ids = None
         self.parent_ids = None
-        if isinstance(self.all_data[0], str):
+        if (isinstance(self.all_data[0], str)
+                or (isinstance(self.all_data[0], list) and isinstance(self.all_data[0][0], str))):
             self.data = [item for item in self.all_data]
         else:
             # multiple alternatives for the data key -- try the first one that matches
