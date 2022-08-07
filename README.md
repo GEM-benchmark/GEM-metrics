@@ -13,7 +13,7 @@ cd GEM-metrics
 pip install -r requirements.txt -r requirements-heavy.txt
 ```
 
-If you want to just run the metrics from console (and don't need access to the checkout), you can just run:
+If you want to just run the metrics from console (and don't need direct access to the source code), you can just run:
 ```
 pip install 'gem-metrics[heavy] @ git+https://github.com/GEM-benchmark/GEM-metrics.git'
 ```
