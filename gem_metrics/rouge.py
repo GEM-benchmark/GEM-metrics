@@ -70,4 +70,3 @@ class ROUGE(ReferencedMetric):
             scores[pred_id] = score
 
         return scores
-        # return result
