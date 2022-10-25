@@ -30,7 +30,9 @@ def nltk_ensure_download(package: str):
         nltk.download(package_id, download_dir=_NLTK_DATA_PATH)
 
 
-def _urlretrieve_reporthook(count: int, block_size: int, total_size: int, start_time: int):
+def _urlretrieve_reporthook(
+    count: int, block_size: int, total_size: int, start_time: int
+):
     """Helper function -- progress indicator."""
     # adapted from https://stackoverflow.com/questions/51212/how-to-write-a-download-progress-indicator-in-python
     duration = time.time() - start_time

@@ -7,18 +7,19 @@ from itertools import zip_longest
 import sacrebleu
 from typing import Dict
 
+
 class CHRF(ReferencedMetric):
     """
     Computes CHRF, CHRF+ and CHRF++.
 
     CHRF is a language-agnostic metric introduced in:
-   
+
     CHRF: character n-gram F-score for automatic MT evaluation
-    Maja Popovic 
+    Maja Popovic
     Proceedings of the Tenth Workshop on Statistical Machine Translation, ACL, 2015
     https://aclanthology.org/W15-3049.pdf
-   
-    CHRF calculates an F-score based on character n-gram precision (CHRP) and 
+
+    CHRF calculates an F-score based on character n-gram precision (CHRP) and
     character n-gram recall (CHRR) as:
     CHRF = (1+beta^2) * ((CHRP * CHRR) / (beta^2 * (CHRP + CHRR))
     This implementation wraps sacrebleu (https://github.com/mjpost/sacrebleu) and uses
@@ -44,14 +45,14 @@ class CHRF(ReferencedMetric):
     def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         ref_streams = list(zip_longest(*references.untokenized))
         scores = {}
-        
+
         for word_order in range(0, 3):
             key = "chrf" + "+" * word_order
             chrf = sacrebleu.corpus_chrf(
-                predictions.untokenized, 
+                predictions.untokenized,
                 ref_streams,
                 word_order=word_order,
-                eps_smoothing=True
+                eps_smoothing=True,
             )
             scores[key] = chrf.score
 

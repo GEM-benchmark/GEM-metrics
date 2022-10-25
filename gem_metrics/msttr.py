@@ -57,7 +57,7 @@ class MSTTR(ReferencelessMetric):
         concatenated = list(itertools.chain.from_iterable(tokenized_data))
 
         for i in range(0, len(concatenated), window_size):
-            window = concatenated[i: i+window_size]
+            window = concatenated[i : i + window_size]
             # removes the last segment from the computation
             if len(window) < window_size:
                 break
@@ -70,7 +70,9 @@ class MSTTR(ReferencelessMetric):
         }
         return results
 
-    def _repeated_MSTTR(self, tokenized_data: List[List[str]], window_size: int, repeats: int = 5) -> float:
+    def _repeated_MSTTR(
+        self, tokenized_data: List[List[str]], window_size: int, repeats: int = 5
+    ) -> float:
         "Repeated MSTTR to obtain a more robust MSTTR value."
         msttrs = []
         for i in range(repeats):

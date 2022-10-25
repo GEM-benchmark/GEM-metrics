@@ -7,7 +7,6 @@ from typing import Dict, List
 from datasets import load_metric
 
 
-
 class BERTScore(ReferencedMetric):
     """BERTScore uses the tiny checkpoint for efficient CPU runtime."""
 

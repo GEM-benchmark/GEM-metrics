@@ -12,7 +12,7 @@ class TER(ReferencedMetric):
     """Translation error rate (TER) from SacreBLEU."""
 
     def __init__(self, normalized: bool = True, case_sensitive: bool = False):
-            self.metric = _TER(normalized=normalized, case_sensitive=case_sensitive)
+        self.metric = _TER(normalized=normalized, case_sensitive=case_sensitive)
 
     def support_caching(self):
         # corpus-level, so individual examples can't be aggregated.
@@ -20,6 +20,5 @@ class TER(ReferencedMetric):
 
     def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         ref_streams = list(zip_longest(*references.untokenized))
-        ter = self.metric.corpus_score(
-            predictions.untokenized, ref_streams)
+        ter = self.metric.corpus_score(predictions.untokenized, ref_streams)
         return {"ter": round(ter.score, 5)}

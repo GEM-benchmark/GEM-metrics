@@ -9,16 +9,16 @@ from typing import Dict
 
 
 class Yules_I(ReferencelessMetric):
-    """Yules I measure (Yules_I) as described in 
+    """Yules I measure (Yules_I) as described in
     "Machine Translationese: Effects of Algorithmic Bias on Linguistic
     Complexity in Machine Translation", Vanmassenhove et al., EACL 2021.
 
-    Yule’s characteristic constant (Yule’s K) measures constancy of text 
-    as the repetitiveness of vocabulary. The larger the Yule's K, 
-    the less rich the vocabulary is. Yule’s K and its inverse Yule’s I 
-    (implemented here) are considered to be more resilient to fluctuations 
+    Yule’s characteristic constant (Yule’s K) measures constancy of text
+    as the repetitiveness of vocabulary. The larger the Yule's K,
+    the less rich the vocabulary is. Yule’s K and its inverse Yule’s I
+    (implemented here) are considered to be more resilient to fluctuations
     related to text length than TTR.
-    For a history of constancy measures of text, see Tanaka-Ishii et al, 
+    For a history of constancy measures of text, see Tanaka-Ishii et al,
     "Computational Constancy Measures of Texts—Yule's K and Rényi's Entropy".
     The implementation follows equation (1) in the above paper.
     """
@@ -34,7 +34,7 @@ class Yules_I(ReferencelessMetric):
         """
         data_vocabulary = {}
         total = 0
-        
+
         for sentence in sentence_array:
             for token in sentence.strip().split():
                 if token not in data_vocabulary:
@@ -42,24 +42,28 @@ class Yules_I(ReferencelessMetric):
                 else:
                     data_vocabulary[token] += 1
                 total += 1
-                
+
         return total, data_vocabulary
 
     def compute(self, cache, predictions: Predictions) -> Dict:
 
-        """ Computing Yules I measure
+        """Computing Yules I measure
         :param sentences: dictionary with all words and their frequencies
         :returns: Yules I (the inverse of yule's K measure) (float) - the higher the better
         """
         _, vocabulary = self.get_vocabulary(predictions.untokenized)
 
         M1 = float(len(vocabulary))
-        M2 = sum([len(list(g))*(freq**2) for freq, g in itertools.groupby(sorted(vocabulary.values()))])
-        
-        if M2-M1 == 0:
+        M2 = sum(
+            [
+                len(list(g)) * (freq**2)
+                for freq, g in itertools.groupby(sorted(vocabulary.values()))
+            ]
+        )
+
+        if M2 - M1 == 0:
             score = 0.0
         else:
-            score = (M1*M1)/(M2-M1)
+            score = (M1 * M1) / (M2 - M1)
 
         return {"yules_i": round(score, 3)}
-        

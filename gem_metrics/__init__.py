@@ -3,11 +3,15 @@
 from argparse import ArgumentParser
 from copy import copy
 from dataclasses import dataclass
-from gem_metrics.config import (get_all_datasets, get_language_for_dataset,
-                                get_url_for_dataset, get_all_transformation_sets,
-                                get_parent_dataset_for_transformation,
-                                get_all_subpopulation_sets,
-                                get_url_for_subpopulation)
+from gem_metrics.config import (
+    get_all_datasets,
+    get_language_for_dataset,
+    get_url_for_dataset,
+    get_all_transformation_sets,
+    get_parent_dataset_for_transformation,
+    get_all_subpopulation_sets,
+    get_url_for_subpopulation,
+)
 from diskcache import Cache
 import json
 from multiprocessing import Process, Manager
@@ -54,7 +58,7 @@ def metric_list_to_metric_dict(metric_list: List[str]) -> Dict[str, List]:
         "ter": "TER",
         "ttr": "TTR",
         "yules_i": "Yules_I",
-        "wer":"WER",
+        "wer": "WER",
         "cider": "CIDER",
         "moverscore": "MoverScore",
     }
@@ -209,7 +213,7 @@ def process_submission(
     parallel_metric_dict: Dict[str, List],
     serial_metric_dict: Dict[str, List],
     cache: Optional[Cache] = None,
-    num_threads: Optional[int] = 12
+    num_threads: Optional[int] = 12,
 ) -> Dict:
     """Process a (potentially) multi-dataset submission. Expects a Submission object
     holding all the predictions, and potentially references and/or sources in a dictionary keyed by
@@ -255,12 +259,11 @@ def process_submission(
         refs_ds = refs.get(dataset, None)
         srcs_ds = srcs.get(dataset, None)
         shared_dict[dataset].update(
-            compute(
-                outs_ds, refs_ds, srcs_ds, serial_metric_dict, None, cache, dataset
-            )
+            compute(outs_ds, refs_ds, srcs_ds, serial_metric_dict, None, cache, dataset)
         )
 
     return dict(shared_dict)
+
 
 def load_references(dataset_name: str) -> Optional[References]:
     """Load a file with references for a standard GEM dataset (attempt download), return None if not present."""
@@ -271,7 +274,9 @@ def load_references(dataset_name: str) -> Optional[References]:
                 dataset_name + ".json",
                 get_url_for_dataset(dataset_name),
             )
-            return References(dataset_file, language=get_language_for_dataset(dataset_name))
+            return References(
+                dataset_file, language=get_language_for_dataset(dataset_name)
+            )
         except Exception as e:
             logger.warn(f"Could not format references for {dataset_name}: {str(e)}")
             traceback.print_tb(e.__traceback__)
@@ -288,7 +293,9 @@ def load_sources(dataset_name: str) -> Optional[References]:
                 dataset_name + ".json",
                 get_url_for_dataset(dataset_name),
             )
-            return Sources(dataset_file, language=get_language_for_dataset(dataset_name))
+            return Sources(
+                dataset_file, language=get_language_for_dataset(dataset_name)
+            )
         except Exception as e:
             logger.info(f"{dataset_name} does not have source associated.")
             return None
@@ -308,7 +315,9 @@ def load_subpopulation_dataset(dataset_name: str) -> Optional[Dict]:
             return contrast_sets
         except Exception as e:
             logger.warn(f"Could not format contrast set for {dataset_name}: {str(e)}")
-            logger.warn(f"Looked for this file: {get_url_for_subpopulation(dataset_name)}.")
+            logger.warn(
+                f"Looked for this file: {get_url_for_subpopulation(dataset_name)}."
+            )
             traceback.print_tb(e.__traceback__)
             return None
     return None
@@ -349,7 +358,7 @@ def process_files(config):
             size_limit=int(4e11),
             cull_limit=0,
             eviction_policy="none",
-            sqlite_cache_size=32000
+            sqlite_cache_size=32000,
         )
         cache.stats(enable=True)
 
@@ -367,7 +376,8 @@ def process_files(config):
                 ref_data = json.load(fh)
                 for dataset_name in ref_data.keys():
                     ref_data[dataset_name] = References(
-                        ref_data[dataset_name], language=get_language_for_dataset(dataset_name)
+                        ref_data[dataset_name],
+                        language=get_language_for_dataset(dataset_name),
                     )
 
         src_data = {}
@@ -376,7 +386,8 @@ def process_files(config):
                 src_data = json.load(fh)
                 for dataset_name in src_data.keys():
                     src_data[dataset_name] = Sources(
-                        src_data[dataset_name], language=get_language_for_dataset(dataset_name)
+                        src_data[dataset_name],
+                        language=get_language_for_dataset(dataset_name),
                     )
 
         # Use default reference+source files if no custom ones are provided.
@@ -450,7 +461,7 @@ def process_files(config):
             parallel_metric_dict=parallel_metric_dict,
             serial_metric_dict=serial_metric_dict,
             cache=cache,
-            num_threads=config.num_threads
+            num_threads=config.num_threads,
         )
 
     # Single-file mode.
@@ -557,8 +568,10 @@ def main():
         ),
     )
     ap.add_argument(
-        "--num_threads", type=int,
-        help="Number of threads that will be started in parallel.", default=12
+        "--num_threads",
+        type=int,
+        help="Number of threads that will be started in parallel.",
+        default=12,
     )
     args = ap.parse_args()
 
@@ -571,7 +584,7 @@ def main():
         use_heavy_metrics=args.heavy_metrics,
         metric_list=args.metric_list,
         cache_folder=args.cache_folder,
-        num_threads=args.num_threads
+        num_threads=args.num_threads,
     )
 
     # hack to make BLEURT work -- it'll fail for anything in argv except the program name :-(

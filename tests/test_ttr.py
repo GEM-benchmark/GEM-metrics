@@ -16,37 +16,28 @@ class TestTTR(TestReferenceLessMetric, unittest.TestCase):
     def test_ttr_metric_basic(self):
         """Tests for the base case."""
 
-        expected_metrics = {
-            "ttr": 0.72414
-        }
+        expected_metrics = {"ttr": 0.72414}
 
         calculated_metrics = self.metric.compute({}, TestData.predictions)
         assertDeepAlmostEqual(self, expected_metrics, calculated_metrics)
 
     def test_ttr_metric_empty(self):
-        """Tests with list of empty sentences. """
+        """Tests with list of empty sentences."""
         text = ["", ""]
 
-        calculated_metrics = self.metric.compute(
-            {},
-            Predictions({"values": text})
-        )
+        calculated_metrics = self.metric.compute({}, Predictions({"values": text}))
 
         self.assertTrue(math.isnan(calculated_metrics["ttr"]))
 
     def test_ttr_disjoint_tokens(self):
-        """Tests for TTR with disjoint tokens. The TTR should be 1.
-        """
+        """Tests for TTR with disjoint tokens. The TTR should be 1."""
         text = [
             "one two three four five six seven eight nine ten",
             "eleven twelve thirteen fourteen fifteen sixteen",
         ]
 
         metric = TTR()
-        calculated_metrics = metric.compute(
-            {},
-            Predictions({"values": text})
-        )
+        calculated_metrics = metric.compute({}, Predictions({"values": text}))
         self.assertAlmostEqual(calculated_metrics[f"ttr"], 1)
 
     def test_ttr_identical_tokens(self):
@@ -59,13 +50,11 @@ class TestTTR(TestReferenceLessMetric, unittest.TestCase):
         ]
 
         metric = TTR()
-        calculated_metrics = metric.compute(
-            {},
-            Predictions({"values": text})
-        )
+        calculated_metrics = metric.compute({}, Predictions({"values": text}))
         self.assertAlmostEqual(
-            calculated_metrics[f"ttr"], round(1/sum(len(s.split()) for s in text), 5)
+            calculated_metrics[f"ttr"], round(1 / sum(len(s.split()) for s in text), 5)
         )
+
 
 if __name__ == "__main__":
     unittest.main()

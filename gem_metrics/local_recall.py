@@ -1,4 +1,3 @@
-
 from .metric import ReferencedMetric
 from .texts import Predictions, References
 
@@ -54,7 +53,9 @@ class LocalRecall(ReferencedMetric):
         return importance_index
 
     @staticmethod
-    def check_item(prediction: Union[List[str], Set[str]], refs: List[List[str]]) -> Dict:
+    def check_item(
+        prediction: Union[List[str], Set[str]], refs: List[List[str]]
+    ) -> Dict:
         """
         Check whether the predictions capture words that are frequently mentioned.
 
@@ -97,7 +98,9 @@ class LocalRecall(ReferencedMetric):
         return score
 
     @staticmethod
-    def local_recall_scores(predictions: List[List[str]], full_references: List[List[List[str]]]) -> Dict:
+    def local_recall_scores(
+        predictions: List[List[str]], full_references: List[List[List[str]]]
+    ) -> Dict:
         """
         Compute local recall scores.
         """

@@ -115,12 +115,15 @@ class ReferencedMetric(AbstractMetric):
 class SourceAndReferencedMetric(AbstractMetric):
     """Base class for all metrics that require source and reference sentences."""
 
-    def compute(self, cache, predictions: Predictions, references: References, sources: Sources) -> Dict:
+    def compute(
+        self, cache, predictions: Predictions, references: References, sources: Sources
+    ) -> Dict:
         raise NotImplementedError
 
 
 class ReproReferencedMetric(ReferencedMetric):
     """Base class for all referenced metrics implemented in Repro."""
+
     def __init__(self, metric):
         self.metric = metric
 
@@ -131,10 +134,7 @@ class ReproReferencedMetric(ReferencedMetric):
     def compute(self, cache, predictions: Predictions, references: References) -> Dict:
         inputs = []
         for pred, refs in zip(predictions.untokenized, references.untokenized):
-            inputs.append({
-                "candidate": pred,
-                "references": refs
-            })
+            inputs.append({"candidate": pred, "references": refs})
 
         # `micro` is a list of dicts. Each dict contains the scores
         # for that input

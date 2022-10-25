@@ -7,7 +7,6 @@ from tests.utils import assertDeepAlmostEqual
 
 
 class TestReferencedMetric(object):
-
     def setUp(self):
         self.metric_name = None
         self.metrics_keys_to_ignore = None
@@ -31,19 +30,33 @@ class TestReferencedMetric(object):
         )
 
     def test_metric(self):
-        self._run_test(TestData.references, TestData.predictions, self.true_results_basic)
+        self._run_test(
+            TestData.references, TestData.predictions, self.true_results_basic
+        )
 
     def test_metric_identical_pred_ref(self):
         """Tests for identical predictions and references"""
-        self._run_test(TestData.references, TestData.identical_predictions, self.true_results_identical_pred_ref)
+        self._run_test(
+            TestData.references,
+            TestData.identical_predictions,
+            self.true_results_identical_pred_ref,
+        )
 
     def test_metric_mismatched_pred_ref(self):
         """Tests for completely dissimilar predictions and references"""
-        self._run_test(TestData.references, TestData.reversed_predictions, self.true_results_mismatched_pred_ref)
+        self._run_test(
+            TestData.references,
+            TestData.reversed_predictions,
+            self.true_results_mismatched_pred_ref,
+        )
 
     def test_metric_empty_tgt(self):
         """Tests for empty target"""
-        self._run_test(TestData.references, TestData.empty_predictions, self.true_results_empty_pred)
+        self._run_test(
+            TestData.references,
+            TestData.empty_predictions,
+            self.true_results_empty_pred,
+        )
 
     def get_calculated_metrics(self, references: References, predictions: Predictions):
         calculated_metrics = self.metric.compute(
@@ -56,12 +69,12 @@ class TestReferencedMetric(object):
         if self.metric.support_caching():
             calculated_metrics = list(calculated_metrics.values())
             calculated_metrics = self.metric._aggregate_scores(calculated_metrics)
-            
+
         if self.metrics_keys_to_ignore:
             for metric in self.metrics_keys_to_ignore:
                 for key in self.metrics_keys_to_ignore[metric]:
                     calculated_metrics[metric].pop(key)
-        
+
         return calculated_metrics
 
 

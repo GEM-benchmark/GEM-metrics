@@ -16,7 +16,9 @@ class Texts:
 
     PUNCTUATION = set(string.punctuation)
 
-    def __init__(self, data_key: Union[str, List], data: Union[str, List, Dict], language="en"):
+    def __init__(
+        self, data_key: Union[str, List], data: Union[str, List, Dict], language="en"
+    ):
         """
         Constructor, to be used by subclasses (`Sources`, `References`, `Predictions`).
         Allows creating the object based on in-memory data or a file.
@@ -60,8 +62,9 @@ class Texts:
         # In case of Dicts, check for IDs we need to shuffle.
         self.ids = None
         self.parent_ids = None
-        if (isinstance(self.all_data[0], str)
-                or (isinstance(self.all_data[0], list) and isinstance(self.all_data[0][0], str))):
+        if isinstance(self.all_data[0], str) or (
+            isinstance(self.all_data[0], list) and isinstance(self.all_data[0][0], str)
+        ):
             self.data = [item for item in self.all_data]
         else:
             # multiple alternatives for the data key -- try the first one that matches
@@ -71,7 +74,9 @@ class Texts:
                         self.data_key = key
                         break
                 if not isinstance(self.data_key, str):
-                    raise Exception(f"No suitable data key ({str(self.data_key)}) found in {str(self.filename)}")
+                    raise Exception(
+                        f"No suitable data key ({str(self.data_key)}) found in {str(self.filename)}"
+                    )
             self.data = [item[self.data_key] for item in self.all_data]
             if "gem_id" in self.all_data[0].keys():
                 self.ids = [item["gem_id"] for item in self.all_data]
@@ -191,7 +196,9 @@ class References(Texts):
     instance, will create 1-element lists if needed."""
 
     def __init__(self, data, language="en"):
-        super().__init__(data_key=["references", "target"], data=data, language=language)
+        super().__init__(
+            data_key=["references", "target"], data=data, language=language
+        )
         if not self.multi_ref:
             # convert to fake multi-ref (1-element lists per instance) so that metrics
             # (mostly expecting multiple references per instance) work correctly
@@ -233,8 +240,9 @@ class Submission:
             # Create Predictions with correct language - default to en.
             # Also change dashes to underscores since that is a common error.
             self.entries[dataset_name.replace("-", "_")] = Predictions(
-                data, language=get_language_for_dataset(dataset_name),
-                task=get_task_type_for_dataset(dataset_name)
+                data,
+                language=get_language_for_dataset(dataset_name),
+                task=get_task_type_for_dataset(dataset_name),
             )
 
     def predictions_for(self, dataset_name: str) -> Optional[Predictions]:

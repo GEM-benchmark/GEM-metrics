@@ -33,8 +33,7 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
         text = ["", ""]
 
         calculated_metrics = self.metric.compute(
-            {},
-            Predictions({"values": text, "language": "en"})
+            {}, Predictions({"values": text, "language": "en"})
         )
 
         self.assertTrue(math.isnan(calculated_metrics["msttr-4"]))
@@ -51,8 +50,7 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
         for window_size in range(1, 11):
             metric = MSTTR(window_size=window_size)
             calculated_metrics = metric.compute(
-                {},
-                Predictions({"values": text, "language": "en"})
+                {}, Predictions({"values": text, "language": "en"})
             )
             self.assertAlmostEquals(calculated_metrics[f"msttr-{window_size}"], 1)
 
@@ -67,8 +65,7 @@ class TestMSTTR(TestReferenceLessMetric, unittest.TestCase):
         for window_size in range(1, 11):
             metric = MSTTR(window_size=window_size)
             calculated_metrics = metric.compute(
-                {},
-                Predictions({"values": text, "language": "en"})
+                {}, Predictions({"values": text, "language": "en"})
             )
             self.assertAlmostEqual(
                 calculated_metrics[f"msttr-{window_size}"], round(1 / window_size, 5)

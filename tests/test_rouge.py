@@ -31,45 +31,25 @@ class TestRouge(TestReferencedMetric, unittest.TestCase):
         }
         self.true_results_identical_pred_ref = {
             "rouge1": {
-                "precision": 1.0, "recall": 1.0, "fmeasure": 1.0,
+                "precision": 1.0,
+                "recall": 1.0,
+                "fmeasure": 1.0,
             },
-            "rouge2": {
-                "precision": 1.0, "recall": 1.0, "fmeasure": 1.0
-            },
-            "rougeL": {
-                "precision": 1.0, "recall": 1.0, "fmeasure": 1.0
-            },
-            "rougeLsum": {
-                "precision": 1.0, "recall": 1.0, "fmeasure": 1.0
-            },
+            "rouge2": {"precision": 1.0, "recall": 1.0, "fmeasure": 1.0},
+            "rougeL": {"precision": 1.0, "recall": 1.0, "fmeasure": 1.0},
+            "rougeLsum": {"precision": 1.0, "recall": 1.0, "fmeasure": 1.0},
         }
         self.true_results_mismatched_pred_ref = {
-            "rouge1": {
-                "precision": 0.0, "recall": 0.0, "fmeasure": 0.0
-            },
-            "rouge2": {
-                "precision": 0.0, "recall": 0.0, "fmeasure": 0.0
-            },
-            "rougeL": {
-                "precision": 0.0, "recall": 0.0, "fmeasure": 0.0
-            },
-            "rougeLsum": {
-                "precision": 0.0, "recall": 0.0, "fmeasure": 0.0
-            },
+            "rouge1": {"precision": 0.0, "recall": 0.0, "fmeasure": 0.0},
+            "rouge2": {"precision": 0.0, "recall": 0.0, "fmeasure": 0.0},
+            "rougeL": {"precision": 0.0, "recall": 0.0, "fmeasure": 0.0},
+            "rougeLsum": {"precision": 0.0, "recall": 0.0, "fmeasure": 0.0},
         }
         self.true_results_empty_pred = {
-            "rouge1": {
-                "precision": 0.0, "recall": 0.0, "fmeasure": 0.0
-            },
-            "rouge2": {
-                "precision": 0.0, "recall": 0.0, "fmeasure": 0.0
-            },
-            "rougeL": {
-                "precision": 0.0, "recall": 0.0, "fmeasure": 0.0
-            },
-            "rougeLsum": {
-                "precision": 0.0, "recall": 0.0, "fmeasure": 0.0
-            },
+            "rouge1": {"precision": 0.0, "recall": 0.0, "fmeasure": 0.0},
+            "rouge2": {"precision": 0.0, "recall": 0.0, "fmeasure": 0.0},
+            "rougeL": {"precision": 0.0, "recall": 0.0, "fmeasure": 0.0},
+            "rougeLsum": {"precision": 0.0, "recall": 0.0, "fmeasure": 0.0},
         }
 
 

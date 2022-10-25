@@ -6,6 +6,7 @@ from .impl.pymteval import NISTScore
 
 from typing import Dict
 
+
 class NIST(ReferencedMetric):
     """NIST from e2e-metrics."""
 

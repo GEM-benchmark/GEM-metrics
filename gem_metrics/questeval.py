@@ -20,12 +20,17 @@ class QuestEval(SourceAndReferencedMetric):
         )
 
     def support_caching(self):
-        # We are using corpus-level QuestEval which is aggregated. 
+        # We are using corpus-level QuestEval which is aggregated.
         return True
 
-    def compute(self, cache, predictions: Predictions, references: References, sources: Sources) -> Dict:
+    def compute(
+        self, cache, predictions: Predictions, references: References, sources: Sources
+    ) -> Dict:
         # If task or language is different, we must change QA / QG models for questeval
-        if predictions.task != self.task or predictions.language.alpha_2 != self.language:
+        if (
+            predictions.task != self.task
+            or predictions.language.alpha_2 != self.language
+        ):
             self.task = predictions.task
             self.language = predictions.language
 
@@ -45,7 +50,9 @@ class QuestEval(SourceAndReferencedMetric):
             )
 
         # If the task was not available, then we pass references instead of sources
-        local_sources, local_references = sources.untokenized, [[None]] * len(sources.untokenized)
+        local_sources, local_references = sources.untokenized, [[None]] * len(
+            sources.untokenized
+        )
         if self._this_task_is_available is False:
             local_sources, local_references = [None] * len(
                 references.untokenized
@@ -59,7 +66,7 @@ class QuestEval(SourceAndReferencedMetric):
         )
 
         formatted_scores = {}
-        for sc, pred_id in zip(scores['ex_level_scores'], predictions.ids):
+        for sc, pred_id in zip(scores["ex_level_scores"], predictions.ids):
             formatted_score = {"questeval": float(sc)}
             formatted_scores[pred_id] = formatted_score
             if cache is not None:

@@ -74,7 +74,7 @@ class PyMeteorWrapper:
                     float(self.meteor_p.stdout.readline().decode("UTF-8").strip())
                 )
             except ValueError:
-                return -1., [0.] * len(predictions)
+                return -1.0, [0.0] * len(predictions)
         score = float(self.meteor_p.stdout.readline().strip())
         self.lock.release()
 

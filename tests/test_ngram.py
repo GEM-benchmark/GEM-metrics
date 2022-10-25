@@ -106,8 +106,7 @@ class TestNGram(TestReferenceLessMetric, unittest.TestCase):
         }
 
         calculated_metrics = self.ngram_metric.compute(
-            {},
-            Predictions({"values": text, "language": "en"})
+            {}, Predictions({"values": text, "language": "en"})
         )
 
         assertDeepAlmostEqual(self, expected_metrics, calculated_metrics)
@@ -160,8 +159,7 @@ class TestNGram(TestReferenceLessMetric, unittest.TestCase):
         }
 
         calculated_metrics = self.ngram_metric.compute(
-            {},
-            Predictions({"values": text, "language": "en"})
+            {}, Predictions({"values": text, "language": "en"})
         )
         assertDeepAlmostEqual(self, expected_metrics, calculated_metrics)
 
@@ -213,8 +211,7 @@ class TestNGram(TestReferenceLessMetric, unittest.TestCase):
         }
 
         calculated_metrics = self.ngram_metric.compute(
-            {},
-            Predictions({"values": text, "language": "en"})
+            {}, Predictions({"values": text, "language": "en"})
         )
         assertDeepAlmostEqual(self, expected_metrics, calculated_metrics)
 

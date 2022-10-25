@@ -12,9 +12,4 @@ class NUBIA(ReproReferencedMetric):
     def _postprocess(self, score_dicts: List) -> List:
         # The Repro version also contains other outputs from
         # NUBIA. Here we just select the score
-        return [
-            {
-                "nubia": scores["nubia"]["nubia_score"]
-            }
-            for scores in score_dicts
-        ]
+        return [{"nubia": scores["nubia"]["nubia_score"]} for scores in score_dicts]

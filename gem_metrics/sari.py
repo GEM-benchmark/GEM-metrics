@@ -26,7 +26,9 @@ class SARI(SourceAndReferencedMetric):
     [3] https://github.com/tensorflow/tensor2tensor/blob/master/tensor2tensor/utils/sari_hook.py
     """
 
-    def compute(self, cache, predictions: Predictions, references: References, sources: Sources) -> Dict:
+    def compute(
+        self, cache, predictions: Predictions, references: References, sources: Sources
+    ) -> Dict:
 
         srcs = [self.normalize(sent) for sent in sources.untokenized]
         preds = [self.normalize(sent) for sent in predictions.untokenized]
@@ -50,7 +52,13 @@ class SARI(SourceAndReferencedMetric):
 
         return sari_scores
 
-    def SARIngram(self, sgrams: List[str], cgrams: List[str], rgramslist: List[List[str]], numref: int) -> Tuple[float, float, float]:
+    def SARIngram(
+        self,
+        sgrams: List[str],
+        cgrams: List[str],
+        rgramslist: List[List[str]],
+        numref: int,
+    ) -> Tuple[float, float, float]:
         rgramsall = [rgram for rgrams in rgramslist for rgram in rgrams]
         rgramcounter = Counter(rgramsall)
 

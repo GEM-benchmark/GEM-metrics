@@ -8,14 +8,14 @@ from typing import Dict
 
 
 class TTR(ReferencelessMetric):
-    """Implements Type to Token Ratio (TTR) as described in 
+    """Implements Type to Token Ratio (TTR) as described in
     "Machine Translationese: Effects of Algorithmic Bias on Linguistic
     Complexity in Machine Translation", Vanmassenhove et al., EACL 2021.
 
     TTR presents the ratio of the total number of different words (types)
-    to the total number of words (tokens). 
+    to the total number of words (tokens).
     Higher TTR indicates a higher degree of lexical diversity.
-    This is implemented below using a simple dictionary counter.    
+    This is implemented below using a simple dictionary counter.
     """
 
     def support_caching(self):
@@ -29,7 +29,7 @@ class TTR(ReferencelessMetric):
         """
         data_vocabulary = {}
         total = 0
-        
+
         for sentence in sentence_array:
             for token in sentence.strip().split():
                 if token not in data_vocabulary:
@@ -37,7 +37,7 @@ class TTR(ReferencelessMetric):
                 else:
                     data_vocabulary[token] += 1
                 total += 1
-                
+
         return total, data_vocabulary
 
     def compute(self, cache, predictions: Predictions) -> Dict:
@@ -45,5 +45,5 @@ class TTR(ReferencelessMetric):
         if total == 0:
             score = NaN
         else:
-            score = len(vocabulary)/total
+            score = len(vocabulary) / total
         return {"ttr": round(score, 5)}
